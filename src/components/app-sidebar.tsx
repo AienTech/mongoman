@@ -1,14 +1,11 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useState } from "react";
-import {
-  Database,
-  GalleryVerticalEnd,
-  MoreHorizontal,
-  Plus,
-} from "lucide-react";
-
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { Database, GalleryVerticalEnd, MoreHorizontal, Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Sidebar,
   SidebarContent,
@@ -19,15 +16,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { ListDatabasesResult } from "mongodb";
-import { useForm } from "react-hook-form";
+} from '@/components/ui/sidebar';
+import { ListDatabasesResult } from 'mongodb';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -36,10 +32,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,7 +47,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import camelCase from 'next/dist/build/webpack/loaders/css-loader/src/camelcase';
 
 interface AppSidebarProps {
   databases: ListDatabasesResult;
@@ -59,9 +57,12 @@ interface AppSidebarProps {
   deleteDatabase: (name: string) => Promise<void>;
 }
 
-interface CreateDatabaseForm {
-  name: string;
-}
+const CreateDatabaseSchema = z.object({
+  name: z.string().min(1, 'Database name is required'),
+  useConvention: z.boolean().default(true),
+});
+
+type CreateDatabaseForm = z.infer<typeof CreateDatabaseSchema>;
 
 export function AppSidebar({
   databases,
@@ -70,32 +71,61 @@ export function AppSidebar({
   dbHost,
   ...props
 }: React.ComponentProps<typeof Sidebar> & AppSidebarProps) {
-  const { register, handleSubmit } = useForm<CreateDatabaseForm>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onSubmit = handleSubmit(async (data) => {
+  const form = useForm<CreateDatabaseForm>({
+    resolver: zodResolver(CreateDatabaseSchema),
+    defaultValues: {
+      name: '',
+      useConvention: true,
+    },
+  });
+
+  // Watch for name changes to apply convention
+  const nameValue = form.watch('name');
+  const useConvention = form.watch('useConvention');
+
+  useEffect(() => {
+    if (!nameValue || !useConvention) return;
+
+    const timeoutId = setTimeout(() => {
+      let newName = camelCase(nameValue);
+
+      if (!newName.endsWith('Db')) {
+        newName = nameValue + 'Db';
+      }
+
+      form.setValue('name', newName);
+    }, 450);
+
+    return () => clearTimeout(timeoutId);
+  }, [nameValue, form.setValue, useConvention]);
+
+  async function onSubmit(data: CreateDatabaseForm) {
     setIsLoading(true);
-    createDatabase(data.name).then(() => {
-      setIsLoading(false);
+    try {
+      await createDatabase(data.name);
       setIsOpen(false);
       window.location.reload();
-    });
-  });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <GalleryVerticalEnd className="size-4" />
+            <SidebarMenuButton size='lg' asChild>
+              <a href='#'>
+                <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
+                  <GalleryVerticalEnd className='size-4' />
                 </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Mongoman</span>
-                  <span className="">{dbHost}</span>
+                <div className='flex flex-col gap-0.5 leading-none'>
+                  <span className='font-semibold'>Mongoman</span>
+                  <span className=''>{dbHost}</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -110,7 +140,7 @@ export function AppSidebar({
                   return (
                     <SidebarMenuItem key={database.name}>
                       <SidebarMenuButton asChild>
-                        <a href={"#"} className="font-medium">
+                        <a href={'#'} className='font-medium'>
                           <Database />
                           {database.name}
                         </a>
@@ -121,25 +151,19 @@ export function AppSidebar({
                             <MoreHorizontal />
                           </SidebarMenuAction>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent side={"right"} align={"start"}>
+                        <DropdownMenuContent side={'right'} align={'start'}>
                           <DropdownMenuItem asChild>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button
-                                  className="w-full justify-start"
-                                  variant="ghost"
-                                >
+                                <Button className='w-full justify-start' variant='ghost'>
                                   Delete
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Are you absolutely sure?
-                                  </AlertDialogTitle>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    This action cannot be undone. This will
-                                    permanently delete your database and remove
+                                    This action cannot be undone. This will permanently delete your database and remove
                                     all your data.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
@@ -166,44 +190,57 @@ export function AppSidebar({
               : null}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <form id="createDatabaseForm" onSubmit={onSubmit}>
-                  <Dialog onOpenChange={setIsOpen} open={isOpen} modal={true}>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost">
-                        <Plus /> Create new database
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Create new database</DialogTitle>
-                        <DialogDescription>
-                          Give a name to your new database and click save.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="name" className="text-right">
-                            Name
-                          </Label>
-                          <Input
-                            {...register("name")}
-                            form="createDatabaseForm"
-                            className="col-span-3"
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          disabled={isLoading}
-                          form="createDatabaseForm"
-                          type="submit"
-                        >
-                          Save
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </form>
+                <Dialog onOpenChange={setIsOpen} open={isOpen} modal={true}>
+                  <DialogTrigger asChild>
+                    <Button variant='ghost'>
+                      <Plus /> Create new database
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className='sm:max-w-[425px]'>
+                    <DialogHeader>
+                      <DialogTitle>Create new database</DialogTitle>
+                      <DialogDescription>Give a name to your new database and click save.</DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+                        <FormField
+                          control={form.control}
+                          name='name'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Name</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name='useConvention'
+                          render={({ field }) => (
+                            <FormItem className='flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'>
+                              <FormControl>
+                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                              </FormControl>
+                              <div className='space-y-1 leading-none'>
+                                <FormLabel>Keep default conventions for naming</FormLabel>
+                                <FormDescription>
+                                  Automatically transforms database names to follow MongoDB naming conventions
+                                </FormDescription>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <DialogFooter>
+                          <Button disabled={isLoading} type='submit'>
+                            Save
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

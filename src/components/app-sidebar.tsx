@@ -10,6 +10,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuAction,
@@ -119,7 +120,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size='lg' asChild>
-              <a href='#'>
+              <a href='/'>
                 <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
                   <GalleryVerticalEnd className='size-4' />
                 </div>
@@ -134,13 +135,14 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel>Databases</SidebarGroupLabel>
           <SidebarMenu>
             {databases.databases.length
               ? databases.databases.map((database) => {
                   return (
                     <SidebarMenuItem key={database.name}>
                       <SidebarMenuButton asChild>
-                        <a href={'#'} className='font-medium'>
+                        <a href={`/databases/${database.name}`} className='font-medium'>
                           <Database />
                           {database.name}
                         </a>
@@ -192,7 +194,7 @@ export function AppSidebar({
               <SidebarMenuButton asChild>
                 <Dialog onOpenChange={setIsOpen} open={isOpen} modal={true}>
                   <DialogTrigger asChild>
-                    <Button variant='ghost'>
+                    <Button variant='ghost' size='sm' className='w-full border border-dashed'>
                       <Plus /> Create new database
                     </Button>
                   </DialogTrigger>

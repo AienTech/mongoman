@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, Eye, MoreHorizontal, Trash, Upload } from 'lucide-react';
+import { Download, Edit, Eye, MoreHorizontal, Trash, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,10 +22,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DEBOUNCE_DEFAULT_INTERVAL } from '@/lib/utils';
+import { snake as kebabCase } from 'case';
+import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 
-type Column = ColumnDef<CollectionInfo | Pick<CollectionInfo, 'name' | 'type' | 'options'>>;
+type Column = ColumnDef<CollectionInfo | Pick<CollectionInfo, 'name' | 'type' | 'options' | 'db'>>;
 
 const columns: Column[] = [
   {
@@ -54,6 +62,8 @@ const columns: Column[] = [
     cell: ({ row }) => {
       const collection = row.original;
 
+      const collectionUrl = `/databases/${collection.db}/${collection.name}`;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -64,9 +74,17 @@ const columns: Column[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log('view', collection.name)}>
-              <Eye className='mr-2 h-4 w-4' />
-              View Data
+            <DropdownMenuItem asChild>
+              <Link href={`${collectionUrl}/edit`}>
+                <Edit className='mr-2 h-4 w-4' />
+                Edit Collection
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={collectionUrl}>
+                <Eye className='mr-2 h-4 w-4' />
+                View Data
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log('export', collection.name)}>
               <Download className='mr-2 h-4 w-4' />
@@ -87,20 +105,59 @@ const columns: Column[] = [
   },
 ];
 
-interface Props {
-  collections: string;
+interface CreateCollectionProps {
   databaseName: string;
+  createCollection: (dbName: string, collectionName: string) => Promise<void>;
 }
 
-function CreateCollectionDialog() {
-  const [open, setOpen] = useState(false);
-  const [collectionName, setCollectionName] = useState('');
+interface Props extends CreateCollectionProps {
+  collections: string;
+}
 
-  const handleCreate = async () => {
-    console.log('Creating collection:', collectionName);
-    setOpen(false);
-    setCollectionName('');
-  };
+const CreateCollectionSchema = z.object({
+  name: z.string().min(1, 'Collection name is required'),
+  useConvention: z.boolean().default(true),
+});
+
+type CreateCollectionForm = z.infer<typeof CreateCollectionSchema>;
+
+function CreateCollectionDialog(props: CreateCollectionProps) {
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const form = useForm<CreateCollectionForm>({
+    resolver: zodResolver(CreateCollectionSchema),
+    defaultValues: {
+      name: '',
+      useConvention: true,
+    },
+  });
+
+  const nameValue = form.watch('name');
+  const useConvention = form.watch('useConvention');
+
+  useEffect(() => {
+    if (!nameValue || !useConvention) return;
+
+    const timeoutId = setTimeout(() => {
+      const newName = kebabCase(nameValue);
+
+      form.setValue('name', newName);
+    }, DEBOUNCE_DEFAULT_INTERVAL);
+
+    return () => clearTimeout(timeoutId);
+  }, [nameValue, form.setValue, useConvention]);
+
+  async function onSubmit(data: CreateCollectionForm) {
+    setIsLoading(true);
+    try {
+      await props.createCollection(props.databaseName, data.name);
+      setOpen(false);
+      window.location.reload();
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -112,37 +169,63 @@ function CreateCollectionDialog() {
           <DialogTitle>Create New Collection</DialogTitle>
           <DialogDescription>Enter the name for your new collection.</DialogDescription>
         </DialogHeader>
-        <div className='grid gap-4 py-4'>
-          <div className='grid grid-cols-4 items-center gap-4'>
-            <Label htmlFor='name' className='text-right'>
-              Name
-            </Label>
-            <Input
-              id='name'
-              value={collectionName}
-              onChange={(e) => setCollectionName(e.target.value)}
-              className='col-span-3'
-              placeholder='my_collection'
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleCreate} disabled={!collectionName.trim()}>
-            Create
-          </Button>
-        </DialogFooter>
+            <FormField
+              control={form.control}
+              name='useConvention'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'>
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className='space-y-1 leading-none'>
+                    <FormLabel>Keep default conventions for naming</FormLabel>
+                    <FormDescription>
+                      Automatically transforms collection names to follow MongoDB naming conventions
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button disabled={isLoading} type='submit'>
+                Save
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default function Table({ collections, databaseName }: Props) {
+export function Table({ collections, databaseName, createCollection }: Props) {
   return (
     <div className='space-y-4'>
       <div className='flex justify-end'>
-        <CreateCollectionDialog />
+        <CreateCollectionDialog databaseName={databaseName} createCollection={createCollection} />
       </div>
-      <DataTable columns={columns} data={JSON.parse(collections)} defaultSorting={[{ id: 'name', desc: false }]} />
+      <DataTable
+        columns={columns}
+        data={(JSON.parse(collections) as CollectionInfo[]).map((c) => ({
+          ...c,
+          db: databaseName,
+        }))}
+        defaultSorting={[{ id: 'name', desc: false }]}
+      />
     </div>
   );
 }

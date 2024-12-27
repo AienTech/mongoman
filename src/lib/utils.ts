@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+export const DEBOUNCE_DEFAULT_INTERVAL = 450;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

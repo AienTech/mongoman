@@ -90,6 +90,13 @@ export namespace Functions {
     return collections;
   }
 
+  export async function createCollection(dbName: string, collectionName: string) {
+    'use server';
+    const client = await clientPromise;
+    const db = client.db(dbName);
+    await db.createCollection(collectionName);
+  }
+
   export async function getDatabases() {
     const client = await clientPromise;
     const admin = client.db().admin();

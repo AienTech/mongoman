@@ -1,10 +1,9 @@
-'use server';
 import { Functions } from '@/lib/mongodb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatBytes } from '@/lib/utils';
-import Table from '@/app/(default)/databases/[databaseName]/table';
+import { Table } from '@/app/(default)/databases/[databaseName]/table';
 
-export default async function DatabasePage({ params }: { params: Promise<{ databaseName: string }> }) {
+export default async function Page({ params }: { params: Promise<{ databaseName: string }> }) {
   const { databaseName } = await params;
 
   const stats = await Functions.getDatabaseStats(databaseName);
@@ -18,7 +17,11 @@ export default async function DatabasePage({ params }: { params: Promise<{ datab
             <CardTitle>Collections</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table collections={JSON.stringify(collections)} />
+            <Table
+              createCollection={Functions.createCollection}
+              databaseName={databaseName}
+              collections={JSON.stringify(collections)}
+            />
           </CardContent>
         </Card>
 

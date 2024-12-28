@@ -24,3 +24,7 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
+export const getUniqueKeys = (arrayOfObjects: object[]) => {
+  return [...new Set(arrayOfObjects.flatMap((obj) => Object.keys(obj)))];
+};

@@ -2,8 +2,9 @@ import { Functions } from '@/lib/mongodb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatBytes } from '@/lib/utils';
 import { Table } from '@/app/(default)/databases/[databaseName]/table';
+import { PageParams } from '@/lib/types';
 
-export default async function Page({ params }: { params: Promise<{ databaseName: string }> }) {
+export default async function Page({ params }: PageParams) {
   const { databaseName } = await params;
 
   const stats = await Functions.getDatabaseStats(databaseName);
@@ -19,6 +20,7 @@ export default async function Page({ params }: { params: Promise<{ databaseName:
           <CardContent>
             <Table
               createCollection={Functions.createCollection}
+              deleteCollection={Functions.deleteCollection}
               databaseName={databaseName}
               collections={JSON.stringify(collections)}
             />

@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, Edit, Eye, MoreHorizontal, Trash, Upload } from 'lucide-react';
+import { Download, Eye, MoreHorizontal, Settings, Trash, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,78 +32,19 @@ import { DEBOUNCE_DEFAULT_INTERVAL } from '@/lib/utils';
 import { snake as kebabCase } from 'case';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 type Column = ColumnDef<CollectionInfo | Pick<CollectionInfo, 'name' | 'type' | 'options' | 'db'>>;
-
-const columns: Column[] = [
-  {
-    accessorKey: 'name',
-    header: 'Collection Name',
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type',
-  },
-  {
-    accessorKey: 'options',
-    header: 'Options',
-    cell: ({ row }) => {
-      const options = row.original.options;
-      if (!options) return;
-      return (
-        <code className='text-sm'>{Object.keys(options).length > 0 ? JSON.stringify(options, null, 2) : '-'}</code>
-      );
-    },
-  },
-  {
-    id: 'actions',
-    size: 20,
-    maxSize: 20,
-    cell: ({ row }) => {
-      const collection = row.original;
-
-      const collectionUrl = `/databases/${collection.db}/${collection.name}`;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
-              <span className='sr-only'>Open menu</span>
-              <MoreHorizontal className='h-4 w-4' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href={`${collectionUrl}/edit`}>
-                <Edit className='mr-2 h-4 w-4' />
-                Edit Collection
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={collectionUrl}>
-                <Eye className='mr-2 h-4 w-4' />
-                View Data
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log('export', collection.name)}>
-              <Download className='mr-2 h-4 w-4' />
-              Export Data
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log('import', collection.name)}>
-              <Upload className='mr-2 h-4 w-4' />
-              Import Data
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log('delete', collection.name)} className='text-red-600'>
-              <Trash className='mr-2 h-4 w-4' />
-              Delete Collection
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
 
 interface CreateCollectionProps {
   databaseName: string;
@@ -112,6 +53,7 @@ interface CreateCollectionProps {
 
 interface Props extends CreateCollectionProps {
   collections: string;
+  deleteCollection: (dbName: string, collectionName: string) => Promise<void>;
 }
 
 const CreateCollectionSchema = z.object({
@@ -212,20 +154,108 @@ function CreateCollectionDialog(props: CreateCollectionProps) {
   );
 }
 
-export function Table({ collections, databaseName, createCollection }: Props) {
+export function Table({ collections, databaseName, createCollection, deleteCollection }: Props) {
+  const columns: Column[] = [
+    {
+      accessorKey: 'name',
+      header: 'Collection Name',
+    },
+    {
+      accessorKey: 'type',
+      header: 'Type',
+    },
+    {
+      accessorKey: 'options',
+      header: 'Options',
+      cell: ({ row }) => {
+        const options = row.original.options;
+        if (!options) return;
+        return (
+          <code className='text-sm'>{Object.keys(options).length > 0 ? JSON.stringify(options, null, 2) : '-'}</code>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      size: 20,
+      maxSize: 20,
+      cell: ({ row }) => {
+        const collection = row.original;
+
+        const collectionUrl = `/databases/${databaseName}/${collection.name}`;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' className='h-8 w-8 p-0'>
+                <span className='sr-only'>Open menu</span>
+                <MoreHorizontal className='h-4 w-4' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href={`${collectionUrl}/manage`}>
+                  <Settings className='mr-2 h-4 w-4' />
+                  Manage Collection
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={collectionUrl}>
+                  <Eye className='mr-2 h-4 w-4' />
+                  View Data
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => console.log('export', collection.name)}>
+                <Download className='mr-2 h-4 w-4' />
+                Export Data
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => console.log('import', collection.name)}>
+                <Upload className='mr-2 h-4 w-4' />
+                Import Data
+              </DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem className='text-red-600' onSelect={(e) => e.preventDefault()}>
+                    <Trash className='mr-2 h-4 w-4' />
+                    Delete Collection
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the collection &#34;{collection.name}
+                      &#34; and remove all its data.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        deleteCollection(databaseName, collection.name).then(() => {
+                          window.location.reload();
+                        });
+                      }}
+                    >
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
+
   return (
     <div className='space-y-4'>
       <div className='flex justify-end'>
         <CreateCollectionDialog databaseName={databaseName} createCollection={createCollection} />
       </div>
-      <DataTable
-        columns={columns}
-        data={(JSON.parse(collections) as CollectionInfo[]).map((c) => ({
-          ...c,
-          db: databaseName,
-        }))}
-        defaultSorting={[{ id: 'name', desc: false }]}
-      />
+      <DataTable columns={columns} data={JSON.parse(collections)} defaultSorting={[{ id: 'name', desc: false }]} />
     </div>
   );
 }

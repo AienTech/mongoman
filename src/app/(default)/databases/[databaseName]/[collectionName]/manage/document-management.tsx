@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { DataTable } from '@/components/data-table';
 import { CellContext, ColumnDef } from '@tanstack/react-table';
 import {
@@ -29,6 +28,7 @@ import {
 import { useState } from 'react';
 import { Document } from '@/lib/types';
 import { getUniqueKeys } from '@/lib/utils';
+import Editor from '@/components/editor';
 
 interface DocumentProps {
   databaseName: string;
@@ -56,6 +56,7 @@ export function DocumentManagement({
 
   const handleCreateDocument = async () => {
     try {
+      console.log(documentContent);
       const document = JSON.parse(documentContent);
       await createDocument(databaseName, collectionName, document);
       setCreateDialogOpen(false);
@@ -195,12 +196,7 @@ export function DocumentManagement({
               <DialogTitle>Create New Document</DialogTitle>
             </DialogHeader>
             <div className='grid gap-4 py-4'>
-              <Textarea
-                className='font-mono min-h-[300px]'
-                placeholder='{ ... }'
-                value={documentContent}
-                onChange={(e) => setDocumentContent(e.target.value)}
-              />
+              <Editor initialValue={documentContent} onChange={setDocumentContent} />
             </div>
             <div className='flex justify-end gap-2'>
               <Button variant='outline' onClick={formatJSON}>
@@ -230,11 +226,7 @@ export function DocumentManagement({
               <DialogTitle>Edit Document</DialogTitle>
             </DialogHeader>
             <div className='grid gap-4 py-4'>
-              <Textarea
-                className='font-mono min-h-[300px]'
-                value={documentContent}
-                onChange={(e) => setDocumentContent(e.target.value)}
-              />
+              <Editor initialValue={documentContent} onChange={setDocumentContent} />
             </div>
             <div className='flex justify-end gap-2'>
               <Button variant='outline' onClick={formatJSON}>

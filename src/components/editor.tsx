@@ -1,9 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { EJSON } from 'bson';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toJsonString, toString } from '@/lib/bson';
 
 interface BSONEditorProps {
   initialValue: string;
@@ -15,26 +13,12 @@ const BSONEditor: React.FC<BSONEditorProps> = ({ initialValue, onChange, readOnl
   const [error, setError] = useState<string>('');
   const [editorValue, setEditorValue] = useState<string>(initialValue);
 
-  const validateBSON = (jsonStr: string): boolean => {
-    try {
-      EJSON.parse(jsonStr);
-      return true;
-    } catch (error: unknown) {
-      return false;
-    }
-  };
-
   const handleChange = useCallback(
     (value: string) => {
       setEditorValue(value);
       setError('');
 
       try {
-        if (!validateBSON(value)) {
-          setError('Invalid BSON format');
-          return;
-        }
-
         onChange?.(value);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Invalid BSON format';
@@ -44,14 +28,6 @@ const BSONEditor: React.FC<BSONEditorProps> = ({ initialValue, onChange, readOnl
     [onChange],
   );
 
-  const formatBSON = (input: string): string => {
-    try {
-      return toString(input) || '';
-    } catch {
-      return input;
-    }
-  };
-
   return (
     <>
       {error && (
@@ -60,13 +36,13 @@ const BSONEditor: React.FC<BSONEditorProps> = ({ initialValue, onChange, readOnl
         </Alert>
       )}
       <CodeMirror
-        value={formatBSON(editorValue)}
+        value={editorValue}
         height='400px'
         extensions={[json()]}
         onChange={handleChange}
         readOnly={readOnly}
         className='border rounded-md'
-        theme='dark'
+        theme='light'
       />
     </>
   );

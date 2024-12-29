@@ -25,87 +25,209 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useState } from 'react';
-import { Document } from '@/lib/types';
+import { useCallback, useEffect, useState } from 'react';
 import { getUniqueKeys } from '@/lib/utils';
 import Editor from '@/components/editor';
+import { Document } from 'mongodb';
 
-interface DocumentProps {
+// Sub-components
+interface DocumentActionsProps {
+  document: Document;
+  onEdit: (document: Document) => void;
+  onView: (document: Document) => void;
+  onDelete: (id: string) => void;
+}
+
+function DocumentActions({ document, onEdit, onView, onDelete }: DocumentActionsProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant='ghost' className='h-8 w-8 p-0'>
+          <span className='sr-only'>Open menu</span>
+          <MoreHorizontal className='h-4 w-4' />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end'>
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => onEdit(document)}>
+          <Pencil className='mr-2 h-4 w-4' />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onView(document)}>
+          <Eye className='mr-2 h-4 w-4' />
+          View
+        </DropdownMenuItem>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem className='text-red-600' onSelect={(e) => e.preventDefault()}>
+              <Trash className='mr-2 h-4 w-4' />
+              Delete
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Document</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this document? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(document._id)} className='bg-red-600 hover:bg-red-700'>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+interface DocumentDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  initialValue: object;
+  onValueChange: (value: object) => void;
+  onSubmit: () => Promise<void>;
+  submitLabel: string;
+}
+
+function DocumentDialog({
+  open,
+  onOpenChange,
+  title,
+  initialValue,
+  onValueChange,
+  onSubmit,
+  submitLabel,
+}: DocumentDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='max-w-3xl'>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <div className='grid gap-4 py-4'>
+          <Editor initialValue={initialValue} onChange={onValueChange} />
+        </div>
+        <div className='flex justify-end gap-2'>
+          <Button onClick={onSubmit}>{submitLabel}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Main component
+interface DocumentManagementProps {
   databaseName: string;
   collectionName: string;
-  documents: string;
-  createDocument: (dbName: string, collectionName: string, document: Document) => Promise<void>;
-  updateDocument: (dbName: string, collectionName: string, id: string, document: Document) => Promise<void>;
+  getDocuments: (dbName: string, collectionName: string, filter?: object) => Promise<Document[]>;
+  createDocument: (dbName: string, collectionName: string, document: Omit<Document, '_id'>) => Promise<void>;
+  updateDocument: (
+    dbName: string,
+    collectionName: string,
+    id: string,
+    document: Omit<Document, '_id'>,
+  ) => Promise<void>;
   deleteDocument: (dbName: string, collectionName: string, id: string) => Promise<void>;
+  onDocumentsChange?: () => void;
 }
 
 export function DocumentManagement({
   databaseName,
   collectionName,
-  documents: docs,
   createDocument,
   updateDocument,
   deleteDocument,
-}: DocumentProps) {
-  const documents = JSON.parse(docs);
+  getDocuments,
+}: DocumentManagementProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [documentContent, setDocumentContent] = useState('');
+  const [documentContent, setDocumentContent] = useState<object>({});
+  const [documents, setDocuments] = useState<Document[]>([]);
+
+  useEffect(() => {
+    let query = {};
+    try {
+      query = JSON.parse(searchQuery);
+    } catch {
+      // ignore
+    }
+
+    getDocuments(databaseName, collectionName, query).then((docs) => {
+      setDocuments(docs);
+    });
+  }, [searchQuery, databaseName, collectionName, getDocuments]);
 
   const handleCreateDocument = async () => {
     try {
-      console.log(documentContent);
-      const document = JSON.parse(documentContent);
-      await createDocument(databaseName, collectionName, document);
+      if (Object.keys(documentContent).length === 0) {
+        console.error('Document content is empty');
+        return;
+      }
+
+      await createDocument(databaseName, collectionName, documentContent);
       setCreateDialogOpen(false);
-      setDocumentContent('');
-      window.location.reload();
+      setDocumentContent({});
+      getDocuments(databaseName, collectionName).then(setDocuments);
     } catch (error) {
       console.error('Failed to create document:', error);
     }
   };
 
   const handleUpdateDocument = async () => {
-    if (!selectedDocument || !selectedDocument._id) return;
+    if (!selectedDocument?._id) return;
     try {
-      const document = JSON.parse(documentContent);
-      await updateDocument(databaseName, collectionName, selectedDocument._id, document);
+      await updateDocument(databaseName, collectionName, selectedDocument._id, documentContent);
       setEditDialogOpen(false);
-      setDocumentContent('');
+      setDocumentContent({});
       setSelectedDocument(null);
-      window.location.reload();
+      getDocuments(databaseName, collectionName).then(setDocuments);
     } catch (error) {
       console.error('Failed to update document:', error);
     }
   };
 
-  const handleDeleteDocument = async (id: string) => {
-    try {
-      await deleteDocument(databaseName, collectionName, id);
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to delete document:', error);
-    }
-  };
+  const handleDeleteDocument = useCallback(
+    async (id: string) => {
+      try {
+        await deleteDocument(databaseName, collectionName, id);
+        getDocuments(databaseName, collectionName).then(setDocuments);
+      } catch (error) {
+        console.error('Failed to delete document:', error);
+      }
+    },
+    [deleteDocument, databaseName, collectionName, getDocuments],
+  );
 
-  const formatJSON = () => {
-    try {
-      const parsed = JSON.parse(documentContent);
-      setDocumentContent(JSON.stringify(parsed, null, 2));
-    } catch (error) {
-      console.error('Invalid JSON', error);
-    }
-  };
+  const handleEdit = useCallback((document: Document) => {
+    setSelectedDocument(document);
+    setDocumentContent(document);
+    setEditDialogOpen(true);
+  }, []);
 
+  const handleView = useCallback((document: Document) => {
+    setSelectedDocument(document);
+    setDocumentContent(document);
+  }, []);
+
+  // Generate columns configuration
   const cols = getUniqueKeys(documents);
-
   const columns: ColumnDef<Document>[] = [
     {
       accessorKey: '_id',
       header: 'ID',
-      cell: ({ row }) => <code className='text-sm'>{row.getValue('_id')}</code>,
+      cell: ({ row }) => {
+        const id = row.getValue('_id');
+        // Convert ObjectId to string for display
+        // @ts-expect-error $oid might actually exist
+        return <code className='text-sm'>{id?.$oid || id}</code>;
+      },
     },
     ...cols
       .filter((key) => key !== '_id')
@@ -114,72 +236,26 @@ export function DocumentManagement({
         header: key,
         cell: ({ row }: CellContext<Document, unknown>) => {
           const value = row.getValue(key);
+          // Handle special EJSON types when displaying
+          if (value && typeof value === 'object' && '$date' in value) {
+            return <code className='text-sm'>{new Date(value.$date as string).toISOString()}</code>;
+          }
+          if (value && typeof value === 'object' && '$oid' in value) {
+            return <code className='text-sm'>{value.$oid as string}</code>;
+          }
           return <code className='text-sm'>{JSON.stringify(value, null, 2)}</code>;
         },
       })),
     {
       id: 'actions',
-      cell: ({ row }) => {
-        const document = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='h-8 w-8 p-0'>
-                <span className='sr-only'>Open menu</span>
-                <MoreHorizontal className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => {
-                  setSelectedDocument(document);
-                  setDocumentContent(JSON.stringify(document, null, 2));
-                  setEditDialogOpen(true);
-                }}
-              >
-                <Pencil className='mr-2 h-4 w-4' />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setSelectedDocument(document);
-                  setDocumentContent(JSON.stringify(document, null, 2));
-                }}
-              >
-                <Eye className='mr-2 h-4 w-4' />
-                View
-              </DropdownMenuItem>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem className='text-red-600' onSelect={(e) => e.preventDefault()}>
-                    <Trash className='mr-2 h-4 w-4' />
-                    Delete
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Document</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this document? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDeleteDocument(document._id)}
-                      className='bg-red-600 hover:bg-red-700'
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
+      cell: ({ row }) => (
+        <DocumentActions
+          document={row.original}
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDeleteDocument}
+        />
+      ),
     },
   ];
 
@@ -191,20 +267,6 @@ export function DocumentManagement({
           <DialogTrigger asChild>
             <Button>Create Document</Button>
           </DialogTrigger>
-          <DialogContent className='max-w-3xl'>
-            <DialogHeader>
-              <DialogTitle>Create New Document</DialogTitle>
-            </DialogHeader>
-            <div className='grid gap-4 py-4'>
-              <Editor initialValue={documentContent} onChange={setDocumentContent} />
-            </div>
-            <div className='flex justify-end gap-2'>
-              <Button variant='outline' onClick={formatJSON}>
-                Format JSON
-              </Button>
-              <Button onClick={handleCreateDocument}>Create</Button>
-            </div>
-          </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent className='space-y-4'>
@@ -220,22 +282,25 @@ export function DocumentManagement({
 
         <DataTable columns={columns} data={documents} defaultSorting={[{ id: '_id', desc: false }]} />
 
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className='max-w-3xl'>
-            <DialogHeader>
-              <DialogTitle>Edit Document</DialogTitle>
-            </DialogHeader>
-            <div className='grid gap-4 py-4'>
-              <Editor initialValue={documentContent} onChange={setDocumentContent} />
-            </div>
-            <div className='flex justify-end gap-2'>
-              <Button variant='outline' onClick={formatJSON}>
-                Format JSON
-              </Button>
-              <Button onClick={handleUpdateDocument}>Save Changes</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DocumentDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          title='Create New Document'
+          initialValue={{}}
+          onValueChange={setDocumentContent}
+          onSubmit={handleCreateDocument}
+          submitLabel='Create'
+        />
+
+        <DocumentDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          title='Edit Document'
+          initialValue={documentContent}
+          onValueChange={setDocumentContent}
+          onSubmit={handleUpdateDocument}
+          submitLabel='Save Changes'
+        />
       </CardContent>
     </Card>
   );

@@ -24,7 +24,14 @@ export default async function Page({ params }: PageParamsWithCollection) {
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <CollectionStats stats={stats} />
 
-        <CollectionActions databaseName={databaseName} collectionName={collectionName} />
+        <CollectionActions
+          databaseName={databaseName}
+          collectionName={collectionName}
+          renameCollection={Functions.renameCollection}
+          reindexCollection={Functions.reindexCollection}
+          compactCollection={Functions.compactCollection}
+          clearCollection={Functions.clearCollection}
+        />
       </div>
 
       <div className='space-y-6'>

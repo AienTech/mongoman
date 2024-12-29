@@ -70,6 +70,7 @@ export namespace Functions {
   }
 
   export async function getDatabaseStats(dbName: string) {
+    'use server';
     const client = await clientPromise;
     const db = client.db(dbName);
     const stats = await db.stats();
@@ -85,6 +86,7 @@ export namespace Functions {
   }
 
   export async function getDatabases() {
+    'use server';
     const client = await clientPromise;
     const admin = client.db().admin();
     const result = await admin.listDatabases();
@@ -172,10 +174,11 @@ export namespace Functions {
     await collection.dropIndex(indexName);
   }
 
-  export async function getDocuments(dbName: string, collectionName: string) {
+  export async function getDocuments(dbName: string, collectionName: string, filter?: object) {
+    'use server';
     const client = await clientPromise;
     const collection = client.db(dbName).collection(collectionName);
-    return collection.find({}).toArray();
+    return collection.find(filter || {}).toArray();
   }
 
   export async function createDocument(dbName: string, collectionName: string, document: object) {
@@ -200,9 +203,35 @@ export namespace Functions {
     'use server';
     const client = await clientPromise;
     const collection = client.db(dbName).collection(collectionName);
-    const res = await collection.deleteOne({ _id: new ObjectId(id) });
+    await collection.deleteOne({ _id: new ObjectId(id) });
+  }
 
-    console.log(res, id);
+  export async function renameCollection(dbName: string, oldName: string, newName: string) {
+    'use server';
+    const client = await clientPromise;
+    const db = client.db(dbName);
+    await db.collection(oldName).rename(newName);
+  }
+
+  export async function reindexCollection(dbName: string, collectionName: string) {
+    'use server';
+    const client = await clientPromise;
+    const db = client.db(dbName);
+    await db.command({ reIndex: collectionName });
+  }
+
+  export async function compactCollection(dbName: string, collectionName: string) {
+    'use server';
+    const client = await clientPromise;
+    const db = client.db(dbName);
+    await db.command({ compact: collectionName });
+  }
+
+  export async function clearCollection(dbName: string, collectionName: string) {
+    'use server';
+    const client = await clientPromise;
+    const db = client.db(dbName);
+    await db.collection(collectionName).deleteMany({});
   }
 }
 

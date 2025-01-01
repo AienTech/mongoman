@@ -1,0 +1,6 @@
+.next
+.qodo
+mongodb_data
+node_modules
+.env*
+compose.yml

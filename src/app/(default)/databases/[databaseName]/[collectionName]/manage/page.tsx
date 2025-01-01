@@ -46,3 +46,5 @@ export default async function Page({ params }: PageParamsWithCollection) {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

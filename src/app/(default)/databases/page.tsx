@@ -57,3 +57,5 @@ export default async function DatabasesPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

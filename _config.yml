@@ -1,24 +1,24 @@
 # Site settings
 title: MongoMan
 description: A modern, web-based MongoDB admin interface
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-baseurl: "/mongoman" # the subpath of your site, e.g. /blog
+baseurl: "/mongoman"
+url: ""
 repository: AienTech/mongoman
 
 # Theme settings
-theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs
 source: docs
 
 # Build settings
 markdown: kramdown
-exclude:
-  - .sass-cache/
-  - .jekyll-cache/
-  - gemfiles/
-  - Gemfile
-  - Gemfile.lock
-  - node_modules/
-  - vendor/
+sass:
+  style: compressed
+  sass_dir: _sass
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-github-metadata
 
 # Just the Docs settings
 color_scheme: light
@@ -30,13 +30,3 @@ aux_links:
   "MongoMan on GitHub":
     - "https://github.com/AienTech/mongoman"
 aux_links_new_tab: true
-
-# Makes Aux links open in a new tab. Default is false
-nav_external_links:
-  - title: View on GitHub
-    url: https://github.com/AienTech/mongoman
-    hide_icon: false
-
-plugins:
-  - jekyll-seo-tag
-  - jekyll-github-metadata

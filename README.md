@@ -1,36 +1,139 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MongoMan
 
-## Getting Started
+A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and Tailwind CSS. MongoMan provides an intuitive way to manage your MongoDB databases, collections, and documents with a clean and responsive UI.
 
-First, run the development server:
+## Features
+
+- 🎨 Modern UI
+- 📊 Database statistics and monitoring
+- 📝 Collection management
+- 📄 Document management
+
+## Environment Variables
+
+To run this project, you will need to add the following environment variable:
+
+`MONGODB_URI` - Your MongoDB connection string (e.g., mongodb://localhost:27017)
+
+## Run Locally
+
+Clone the project
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone git@github.com:AienTech/mongoman.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Go to the project directory
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd mongoman
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Install dependencies
 
-## Learn More
+```bash
+yarn install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Set up your environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.example .env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then edit `.env.local` with your MongoDB connection string.
 
-## Deploy on Vercel
+Start the development server
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+yarn dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Docker Installation
+
+Run with docker-compose:
+
+```yaml
+version: '3'
+services:
+  mongoman:
+    image: ghcr.io/aientech/mongoman:main
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+    ports:
+      - "3000:3000"
+```
+
+Or run directly with Docker:
+
+```bash
+docker run -p 3000:3000 -e MONGODB_URI=mongodb://mongo:27017 ghcr.io/aientech/mongoman:main
+```
+
+## Building from Source
+
+Build the Docker image:
+
+```bash
+docker build --build-arg MONGODB_URI=mongodb://temporary:27017 -t mongoman .
+```
+
+## Tech Stack
+
+- Next.js 15
+- React
+- TypeScript
+- shadcn/ui
+- Tailwind CSS
+- TanStack Table
+- MongoDB Node.js Driver
+
+## Contributing
+
+Contributions are always welcome! Here's how you can help:
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
+## Acknowledgements
+
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [Next.js](https://nextjs.org/) for the amazing framework
+- [MongoDB](https://www.mongodb.com/) for the database platform
+
+## Authors
+
+- [@aientech](https://github.com/aientech)
+
+## Support
+
+For support, please open an issue in the GitHub repository or contact the maintainers.
+
+## Roadmap
+
+- Add authentication and authorization
+- Support for MongoDB Atlas integration
+- Advanced query builder
+- Database backup and restore functionality
+- Collection and document import/export
+- Aggregation pipeline builder
+- Light/dark mode support
+
+## Screenshots
+
+Coming soon...
+
+## Related
+
+Here are some related projects:
+
+- [Mongo Express](https://github.com/mongo-express/mongo-express)
+- [MongoDB Compass](https://www.mongodb.com/products/compass)

@@ -7,7 +7,7 @@ github_username: AienTech
 
 # Build settings
 remote_theme: just-the-docs/just-the-docs
-source: doc
+source: docs
 
 # Theme settings
 search_enabled: true

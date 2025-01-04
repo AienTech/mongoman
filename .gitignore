@@ -43,4 +43,5 @@ next-env.d.ts
 .qodo
 
 mongodb_data
+_site/
 .idea

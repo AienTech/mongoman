@@ -9,6 +9,8 @@ permalink: /
 
 A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and Tailwind CSS. MongoMan provides an intuitive way to manage your MongoDB databases, collections, and documents with a clean and responsive UI.
 
+![Main](./assets/images/main.png)
+
 {: .warning }
 > This project is currently under active development. Some features may be missing or partially implemented. Bug reports, feature requests, and contributions are warmly welcomed! Please feel free to open issues or submit pull requests.
 
@@ -16,6 +18,8 @@ A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and T
 > The initial version of MongoMan is primarily developed through conversations with Anthropic's Claude AI (3.5 Sonnet), with minimal manual coding from my side, just quick code reviews and partial improvements. While this essentially shows the potential of "AI-assisted" development, I am now actively maintaining and improving the codebase myself as the project scope has grown.
 
 ## Key Features
+
+![Database](./assets/images/database.png)
 
 - 🎨 Modern UI built with shadcn/ui and Tailwind CSS
 - 📊 Database statistics and monitoring

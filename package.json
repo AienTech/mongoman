@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "docker-build": "docker build -t mongoman .",
     "start": "next start",
     "lint": "next lint",
     "format": "npx prettier . '!./mongodb_data' --write"

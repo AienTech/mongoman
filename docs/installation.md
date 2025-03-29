@@ -22,7 +22,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
     ports:
-      - "3000:3000"
+      - '3000:3000'
 ```
 
 Then run:
@@ -48,31 +48,37 @@ docker run -p 3000:3000 -e MONGODB_URI=mongodb://mongo:27017 ghcr.io/aientech/mo
 ### Steps
 
 1. Clone the repository:
+
 ```bash
 git clone git@github.com:AienTech/mongoman.git
 ```
 
 2. Navigate to project directory:
+
 ```bash
 cd mongoman
 ```
 
 3. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 4. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
 ```
 
 5. Edit `.env.local` and set your MongoDB connection string:
+
 ```
 MONGODB_URI=mongodb://localhost:27017
 ```
 
 6. Start the development server:
+
 ```bash
 yarn dev
 ```
@@ -87,8 +93,8 @@ docker build --build-arg MONGODB_URI=mongodb://temporary:27017 -t mongoman .
 
 ## Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
+| Variable      | Description               | Example                     |
+| ------------- | ------------------------- | --------------------------- |
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017` |
 
 ## Verifying Installation

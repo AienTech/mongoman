@@ -12,9 +12,11 @@ A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and T
 ![Main](./assets/images/main.png)
 
 {: .warning }
+
 > This project is currently under active development. Some features may be missing or partially implemented. Bug reports, feature requests, and contributions are warmly welcomed! Please feel free to open issues or submit pull requests.
 
 {: .note }
+
 > The initial version of MongoMan is primarily developed through conversations with Anthropic's Claude AI (3.5 Sonnet), with minimal manual coding from my side, just quick code reviews and partial improvements. While this essentially shows the potential of "AI-assisted" development, I am now actively maintaining and improving the codebase myself as the project scope has grown.
 
 ## Key Features
@@ -29,11 +31,13 @@ A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and T
 ## Quick Start
 
 1. Install using Docker:
+
 ```bash
 docker run -p 3000:3000 -e MONGODB_URI=mongodb://mongo:27017 ghcr.io/aientech/mongoman:main
 ```
 
 2. Or install locally:
+
 ```bash
 git clone git@github.com:AienTech/mongoman.git
 cd mongoman

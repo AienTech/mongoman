@@ -1,8 +1,8 @@
 # Site settings
 title: MongoMan
 description: A modern, web-based MongoDB admin interface
-baseurl: "/mongoman"
-url: ""
+baseurl: '/mongoman'
+url: ''
 repository: AienTech/mongoman
 
 # Theme settings
@@ -29,8 +29,8 @@ heading_anchors: true
 
 # Aux links for the upper right navigation
 aux_links:
-  "MongoMan on GitHub":
-    - "https://github.com/AienTech/mongoman"
+  'MongoMan on GitHub':
+    - 'https://github.com/AienTech/mongoman'
 aux_links_new_tab: true
 
 callouts:

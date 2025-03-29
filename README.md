@@ -4,7 +4,7 @@ A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and T
 
 > ⚠️ **Note**: This project is currently under active development. Some features may be missing or partially implemented. Bug reports, feature requests, and contributions are warmly welcomed! Please feel free to open issues or submit pull requests.
 
-> 🤖 **AI-Powered Development**: The initial version of MongoMan is primarily developed through conversations with Anthropic's Claude AI (3.5 Sonnet), with minimal manual coding from my side, just quick code reviews and partial improvements. While this essentially shows the potential of "AI-assisted" development, I am now actively maintaining and improving the codebase myself as the project scope has grown.
+> 🤖 **AI-Powered Development**: The initial version of MongoMan is primarily developed through conversations with Anthropic's Claude AI (3.5 Sonnet), with minimal manual coding from my side, just quick code reviews and partial improvements. I am now actively maintaining and improving the codebase myself as the project scope has grown.
 
 ## Features
 
@@ -65,7 +65,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
     ports:
-      - "3000:3000"
+      - '3000:3000'
 ```
 
 Or run directly with Docker:
@@ -101,7 +101,6 @@ Contributions are always welcome! Here's how you can help:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
 
 ## License
 

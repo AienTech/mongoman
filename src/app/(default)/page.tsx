@@ -1,9 +1,9 @@
-import { Functions } from '@/lib/mongodb';
+import { getServerStatus } from '@/lib/mongodb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatUptime } from '@/lib/utils';
 
 export default async function Page() {
-  const status = await Functions.getServerStatus();
+  const status = await getServerStatus();
   return (
     <div className='p-6 space-y-6'>
       <h1 className='text-2xl font-bold mb-4'>Server Status</h1>

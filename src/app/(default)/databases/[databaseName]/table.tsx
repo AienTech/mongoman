@@ -67,7 +67,7 @@ function CreateCollectionDialog(props: CreateCollectionProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const form = useForm<CreateCollectionForm>({
+  const form = useForm({
     resolver: zodResolver(CreateCollectionSchema),
     defaultValues: {
       name: '',

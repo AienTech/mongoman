@@ -77,7 +77,7 @@ export function AppSidebar({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const form = useForm<CreateDatabaseForm>({
+  const form = useForm({
     resolver: zodResolver(CreateDatabaseSchema),
     defaultValues: {
       name: '',

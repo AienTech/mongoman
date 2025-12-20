@@ -1,5 +1,5 @@
 import { PageParamsWithCollection } from '@/lib/types';
-import { Functions } from '@/lib/mongodb';
+import { getDocuments, createDocument, updateDocument, deleteDocument } from '@/lib/mongodb';
 import { DocumentManagement } from '@/app/(default)/databases/[databaseName]/[collectionName]/manage/document-management';
 import { EJSON } from 'bson';
 
@@ -8,20 +8,20 @@ export default async function Page({ params }: PageParamsWithCollection) {
 
   const getSerializedDocuments = async (dbName: string, collectionName: string, filter?: object) => {
     'use server';
-    const docs = await Functions.getDocuments(dbName, collectionName, filter);
+    const docs = await getDocuments(dbName, collectionName, filter);
     return docs.map((doc) => EJSON.serialize(doc));
   };
 
   const createSerializedDocument = async (dbName: string, collectionName: string, document: object) => {
     'use server';
     const deserializedDoc = EJSON.deserialize(document);
-    return Functions.createDocument(dbName, collectionName, deserializedDoc);
+    return createDocument(dbName, collectionName, deserializedDoc);
   };
 
   const updateSerializedDocument = async (dbName: string, collectionName: string, id: string, document: object) => {
     'use server';
     const deserializedDoc = EJSON.deserialize(document);
-    return Functions.updateDocument(dbName, collectionName, id, deserializedDoc);
+    return updateDocument(dbName, collectionName, id, deserializedDoc);
   };
 
   return (
@@ -31,7 +31,7 @@ export default async function Page({ params }: PageParamsWithCollection) {
       getDocuments={getSerializedDocuments}
       createDocument={createSerializedDocument}
       updateDocument={updateSerializedDocument}
-      deleteDocument={Functions.deleteDocument}
+      deleteDocument={deleteDocument}
     />
   );
 }

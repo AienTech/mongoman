@@ -1,5 +1,5 @@
 // app/databases/page.tsx
-import { Functions } from '@/lib/mongodb';
+import { getDatabases, getDatabaseStats } from '@/lib/mongodb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -7,12 +7,12 @@ import { DatabaseTable } from './table';
 
 export default async function DatabasesPage() {
   // Get all databases and their stats
-  const { databases } = await Functions.getDatabases();
+  const { databases } = await getDatabases();
 
   const databaseStats = await Promise.all(
     databases.map(async (db) => {
       try {
-        const stats = await Functions.getDatabaseStats(db.name);
+        const stats = await getDatabaseStats(db.name);
         return {
           name: db.name,
           sizeOnDisk: db.sizeOnDisk,

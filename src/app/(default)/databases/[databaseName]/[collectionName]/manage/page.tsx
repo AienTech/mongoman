@@ -4,12 +4,21 @@ import { Separator } from '@/components/ui/separator';
 import { CollectionActions } from './collection-actions';
 import { CollectionStats } from './collection-stats';
 import { IndexManagement } from './index-management';
-import { Functions } from '@/lib/mongodb';
+import {
+  getCollectionStats,
+  getCollectionIndexes,
+  renameCollection,
+  reindexCollection,
+  compactCollection,
+  clearCollection,
+  createCollectionIndex,
+  dropCollectionIndex,
+} from '@/lib/mongodb';
 
 export default async function Page({ params }: PageParamsWithCollection) {
   const { collectionName, databaseName } = await params;
-  const stats = await Functions.getCollectionStats(databaseName, collectionName);
-  const indexes = await Functions.getCollectionIndexes(databaseName, collectionName);
+  const stats = await getCollectionStats(databaseName, collectionName);
+  const indexes = await getCollectionIndexes(databaseName, collectionName);
 
   return (
     <div className='p-6 space-y-6'>
@@ -27,10 +36,10 @@ export default async function Page({ params }: PageParamsWithCollection) {
         <CollectionActions
           databaseName={databaseName}
           collectionName={collectionName}
-          renameCollection={Functions.renameCollection}
-          reindexCollection={Functions.reindexCollection}
-          compactCollection={Functions.compactCollection}
-          clearCollection={Functions.clearCollection}
+          renameCollection={renameCollection}
+          reindexCollection={reindexCollection}
+          compactCollection={compactCollection}
+          clearCollection={clearCollection}
         />
       </div>
 
@@ -39,8 +48,8 @@ export default async function Page({ params }: PageParamsWithCollection) {
           databaseName={databaseName}
           collectionName={collectionName}
           indexes={indexes}
-          createIndex={Functions.createCollectionIndex}
-          deleteIndex={Functions.dropCollectionIndex}
+          createIndex={createCollectionIndex}
+          deleteIndex={dropCollectionIndex}
         />
       </div>
     </div>

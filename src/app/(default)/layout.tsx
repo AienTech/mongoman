@@ -4,9 +4,17 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { Separator } from '@/components/ui/separator';
 import { getDatabases, createDatabase, deleteDatabase } from '@/lib/mongodb';
 import { DynamicBreadcrumb } from '@/components/dynamic-breadcrumb';
+import { EJSON } from 'bson';
 
 export default async function RootLayout({ children }: PropsWithChildren) {
-  const databases = await getDatabases();
+  const databasesResult = await getDatabases();
+  // Serialize MongoDB result to plain objects for Client Component
+  const databases = EJSON.serialize(databasesResult) as {
+    databases: Array<{ name: string; sizeOnDisk: number; empty: boolean }>;
+    totalSize: number;
+    totalSizeMb: number;
+    ok: number;
+  };
   const url = new URL('', process.env.MONGODB_URI);
 
   return (

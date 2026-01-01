@@ -3,12 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatBytes } from '@/lib/utils';
 import { Table } from '@/app/(default)/databases/[databaseName]/table';
 import { PageParams } from '@/lib/types';
+import { EJSON } from 'bson';
 
 export default async function Page({ params }: PageParams) {
   const { databaseName } = await params;
 
   const stats = await getDatabaseStats(databaseName);
   const collections = await getCollections(databaseName);
+  // Serialize collections for Client Component
+  const serializedCollections = EJSON.serialize(collections);
 
   return (
     <div className='p-6 space-y-6'>
@@ -22,7 +25,7 @@ export default async function Page({ params }: PageParams) {
               createCollection={createCollection}
               deleteCollection={deleteCollection}
               databaseName={databaseName}
-              collections={JSON.stringify(collections)}
+              collections={JSON.stringify(serializedCollections)}
             />
           </CardContent>
         </Card>

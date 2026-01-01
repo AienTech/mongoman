@@ -18,7 +18,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { ListDatabasesResult } from 'mongodb';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,7 +53,12 @@ import { DEBOUNCE_DEFAULT_INTERVAL } from '@/lib/utils';
 import Link from 'next/link';
 
 interface AppSidebarProps {
-  databases: ListDatabasesResult;
+  databases: {
+    databases: Array<{ name: string; sizeOnDisk: number; empty: boolean }>;
+    totalSize: number;
+    totalSizeMb: number;
+    ok: number;
+  };
   dbHost: string;
   createDatabase: (name: string) => Promise<void>;
   deleteDatabase: (name: string) => Promise<void>;

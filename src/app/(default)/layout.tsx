@@ -7,13 +7,27 @@ import { DynamicBreadcrumb } from '@/components/dynamic-breadcrumb';
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   const databases = await getDatabases();
-  const url = new URL('', process.env.MONGODB_URI);
+  
+  // Parse MongoDB URI to extract host(s) - supports both single host and replica sets
+  let dbHost = 'localhost:27017';
+  if (process.env.MONGODB_URI) {
+    try {
+      // Extract host(s) from URI (works for both single host and replica sets)
+      // Examples: mongodb://localhost:27017 or mongodb://host1:27017,host2:27017,host3:27017/?replicaSet=rs0
+      const uriMatch = process.env.MONGODB_URI.match(/^mongodb:\/\/(?:[^@]+@)?([^\/?]+)/);
+      if (uriMatch) {
+        dbHost = uriMatch[1].split(',')[0]; // Get first host (for replica sets) or the only host (for single host)
+      }
+    } catch {
+      // Fallback to default if parsing fails
+    }
+  }
 
   return (
     <SidebarProvider>
       <AppSidebar
         databases={databases}
-        dbHost={url.host}
+        dbHost={dbHost}
         createDatabase={createDatabase}
         deleteDatabase={deleteDatabase}
       />

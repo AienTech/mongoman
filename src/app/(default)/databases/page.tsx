@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DatabaseTable } from './table';
+import { EJSON } from 'bson';
 
 export default async function DatabasesPage() {
   // Get all databases and their stats
-  const { databases } = await getDatabases();
+  const databasesResult = await getDatabases();
+  const { databases } = EJSON.serialize(databasesResult) as { databases: Array<{ name: string; sizeOnDisk: number }> };
 
   const databaseStats = await Promise.all(
     databases.map(async (db) => {
@@ -15,7 +17,7 @@ export default async function DatabasesPage() {
         const stats = await getDatabaseStats(db.name);
         return {
           name: db.name,
-          sizeOnDisk: db.sizeOnDisk,
+          sizeOnDisk: Number(db.sizeOnDisk), // Convert Long to number
           collections: stats.collections,
           empty: stats.collections === 0,
         };
@@ -23,7 +25,7 @@ export default async function DatabasesPage() {
         console.error(`Error getting stats for ${db.name}:`, error);
         return {
           name: db.name,
-          sizeOnDisk: db.sizeOnDisk,
+          sizeOnDisk: Number(db.sizeOnDisk), // Convert Long to number
           collections: 0,
           empty: true,
         };

@@ -22,3 +22,10 @@ export interface CollectionStats {
 export interface Document extends Doc {
   _id: string;
 }
+
+export interface DatabaseInfo {
+  databases: Array<{ name: string; sizeOnDisk: number; empty: boolean }>;
+  totalSize: number;
+  totalSizeMb: number;
+  ok: number;
+}

@@ -51,18 +51,7 @@ import {
 import camelCase from 'next/dist/build/webpack/loaders/css-loader/src/camelcase';
 import { DEBOUNCE_DEFAULT_INTERVAL } from '@/lib/utils';
 import Link from 'next/link';
-
-interface AppSidebarProps {
-  databases: {
-    databases: Array<{ name: string; sizeOnDisk: number; empty: boolean }>;
-    totalSize: number;
-    totalSizeMb: number;
-    ok: number;
-  };
-  dbHost: string;
-  createDatabase: (name: string) => Promise<void>;
-  deleteDatabase: (name: string) => Promise<void>;
-}
+import { DatabaseInfo } from '@/lib/types';
 
 const CreateDatabaseSchema = z.object({
   name: z.string().min(1, 'Database name is required'),
@@ -70,6 +59,13 @@ const CreateDatabaseSchema = z.object({
 });
 
 type CreateDatabaseForm = z.infer<typeof CreateDatabaseSchema>;
+
+export interface AppSidebarProps {
+  databases: DatabaseInfo;
+  dbHost: string;
+  createDatabase: (name: string) => Promise<void>;
+  deleteDatabase: (name: string) => Promise<void>;
+}
 
 export function AppSidebar({
   databases,

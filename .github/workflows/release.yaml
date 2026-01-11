@@ -1,0 +1,92 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "tag=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "version=${TAG_VERSION#v}" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          
+          echo "Generating changelog from $PREV_TAG to ${{ steps.version.outputs.tag }}"
+          
+          CHANGELOG=$(git log $PREV_TAG..${{ steps.version.outputs.tag }} --pretty=format:"- %s (%h)" --no-merges)
+          
+          # Create release notes
+          cat << EOF > release_notes.md
+          ## Changes
+          
+          $CHANGELOG
+          
+          ## Docker Image
+          
+          Pull this release:
+          \`\`\`bash
+          docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          \`\`\`
+          
+          Or use the latest tag:
+          \`\`\`bash
+          docker pull ghcr.io/${{ github.repository }}:latest
+          \`\`\`
+          
+          ## Installation
+          
+          ### Using Docker Compose
+          
+          \`\`\`yaml
+          services:
+            mongoman:
+              image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+              ports:
+                - "3000:3000"
+              environment:
+                - MONGODB_URI=mongodb://your-mongodb-host:27017
+          \`\`\`
+          
+          ### Using Docker
+          
+          \`\`\`bash
+          docker run -p 3000:3000 \\
+            -e MONGODB_URI=mongodb://your-mongodb-host:27017 \\
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          \`\`\`
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

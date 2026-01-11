@@ -4,8 +4,6 @@ A modern, web-based MongoDB admin interface built with Next.js, shadcn/ui, and T
 
 > ⚠️ **Note**: This project is currently under active development. Some features may be missing or partially implemented. Bug reports, feature requests, and contributions are warmly welcomed! Please feel free to open issues or submit pull requests.
 
-> 🤖 **AI-Powered Development**: The initial version of MongoMan is primarily developed through conversations with Anthropic's Claude AI (3.5 Sonnet), with minimal manual coding from my side, just quick code reviews and partial improvements. I am now actively maintaining and improving the codebase myself as the project scope has grown.
-
 ## Features
 
 - 🎨 Modern UI
@@ -73,6 +71,31 @@ Or run directly with Docker:
 ```bash
 docker run -p 3000:3000 -e MONGODB_URI=mongodb://mongo:27017 ghcr.io/aientech/mongoman:main
 ```
+
+### Using Specific Versions
+
+For production use, it's recommended to use specific version tags instead of `main`:
+
+```bash
+docker pull ghcr.io/aientech/mongoman:0.1.1
+```
+
+Available tags:
+- `latest` - Latest stable release
+- `main` - Latest development build
+- `0.1.1`, `v0.1.1` - Specific version tags
+- `0.1` - Latest patch version in the 0.1.x series
+
+See [GitHub Releases](https://github.com/AienTech/mongoman/releases) for all available versions.
+
+## Releases
+
+MongoMan uses semantic versioning for releases. Each release includes:
+- Versioned Docker images on GitHub Container Registry
+- Automated changelog
+- Installation instructions
+
+**For maintainers:** See [RELEASE.md](RELEASE.md) for the release process and how to create new releases.
 
 ## Building from Source
 

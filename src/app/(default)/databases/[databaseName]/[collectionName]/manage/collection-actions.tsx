@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PenLine, RefreshCw, Minimize2, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,7 +133,8 @@ export function CollectionActions({
       <CardContent className='grid grid-cols-2 gap-4'>
         <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant='outline' className='w-full'>
+            <Button variant='outline' className='w-full justify-start gap-2'>
+              <PenLine className='h-4 w-4' />
               Rename Collection
             </Button>
           </DialogTrigger>
@@ -165,17 +167,20 @@ export function CollectionActions({
           </DialogContent>
         </Dialog>
 
-        <Button variant='outline' className='w-full' onClick={handleReindex} disabled={isLoading === 'reindex'}>
+        <Button variant='outline' className='w-full justify-start gap-2' onClick={handleReindex} disabled={isLoading === 'reindex'}>
+          <RefreshCw className={`h-4 w-4 ${isLoading === 'reindex' ? 'animate-spin' : ''}`} />
           {isLoading === 'reindex' ? 'Reindexing...' : 'Reindex'}
         </Button>
 
-        <Button variant='outline' className='w-full' onClick={handleCompact} disabled={isLoading === 'compact'}>
+        <Button variant='outline' className='w-full justify-start gap-2' onClick={handleCompact} disabled={isLoading === 'compact'}>
+          <Minimize2 className='h-4 w-4' />
           {isLoading === 'compact' ? 'Compacting...' : 'Compact'}
         </Button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant='outline' className='w-full text-red-600 hover:text-red-600'>
+            <Button variant='outline' className='w-full justify-start gap-2 text-red-600 hover:text-red-600'>
+              <Trash2 className='h-4 w-4' />
               Clear Data
             </Button>
           </AlertDialogTrigger>

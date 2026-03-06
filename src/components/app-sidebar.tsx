@@ -2,13 +2,14 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Database, GalleryVerticalEnd, MoreHorizontal, Plus } from 'lucide-react';
+import { Database, GalleryVerticalEnd, LogOut, MoreHorizontal, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -65,6 +66,8 @@ export interface AppSidebarProps {
   dbHost: string;
   createDatabase: (name: string) => Promise<void>;
   deleteDatabase: (name: string) => Promise<void>;
+  authEnabled?: boolean;
+  username?: string;
 }
 
 export function AppSidebar({
@@ -72,10 +75,14 @@ export function AppSidebar({
   createDatabase,
   deleteDatabase,
   dbHost,
+  authEnabled,
+  username,
   ...props
 }: React.ComponentProps<typeof Sidebar> & AppSidebarProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [deletingDb, setDeletingDb] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   const form = useForm({
     resolver: zodResolver(CreateDatabaseSchema),
@@ -128,7 +135,7 @@ export function AppSidebar({
                 </div>
                 <div className='flex flex-col gap-0.5 leading-none'>
                   <span className='font-semibold'>Mongoman</span>
-                  <span className=''>{dbHost}</span>
+                  <span className='text-xs text-sidebar-foreground/60 font-mono'>{dbHost}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -172,15 +179,21 @@ export function AppSidebar({
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel disabled={deletingDb === database.name}>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => {
-                                      deleteDatabase(database.name).then(() => {
+                                    disabled={deletingDb === database.name}
+                                    onClick={async (e) => {
+                                      e.preventDefault();
+                                      setDeletingDb(database.name);
+                                      try {
+                                        await deleteDatabase(database.name);
                                         window.location.reload();
-                                      });
+                                      } finally {
+                                        setDeletingDb(null);
+                                      }
                                     }}
                                   >
-                                    Continue
+                                    {deletingDb === database.name ? 'Deleting...' : 'Continue'}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -191,7 +204,9 @@ export function AppSidebar({
                     </SidebarMenuItem>
                   );
                 })
-              : null}
+              : (
+                  <p className='px-2 py-4 text-sm text-sidebar-foreground/50'>No databases yet</p>
+                )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Dialog onOpenChange={setIsOpen} open={isOpen} modal={true}>
@@ -250,6 +265,28 @@ export function AppSidebar({
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      {authEnabled && (
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                disabled={isLoggingOut}
+                onClick={async () => {
+                  setIsLoggingOut(true);
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                  } finally {
+                    window.location.href = '/login';
+                  }
+                }}
+              >
+                <LogOut className='h-4 w-4' />
+                <span>{isLoggingOut ? 'Logging out...' : `Logout${username ? ` (${username})` : ''}`}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
       <SidebarRail />
     </Sidebar>
   );

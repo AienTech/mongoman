@@ -4,6 +4,7 @@
 import { DataTable } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
+import { Database } from 'lucide-react';
 import { formatBytes } from '@/lib/utils';
 
 interface DatabaseStats {
@@ -21,7 +22,8 @@ export function DatabaseTable({ data }: { data: DatabaseStats[] }) {
       cell: ({ row }) => {
         const name = row.getValue('name') as string;
         return (
-          <Link href={`/databases/${name}`} className='hover:underline'>
+          <Link href={`/databases/${name}`} className='flex items-center gap-2 font-medium hover:underline'>
+            <Database className='h-4 w-4 text-muted-foreground' />
             {name}
           </Link>
         );
@@ -46,10 +48,13 @@ export function DatabaseTable({ data }: { data: DatabaseStats[] }) {
         const isEmpty = row.getValue('empty') as boolean;
         return (
           <span
-            className={`px-2 py-1 rounded-full text-xs ${
-              isEmpty ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              isEmpty
+                ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
+                : 'bg-green-500/10 text-green-600 dark:text-green-400'
             }`}
           >
+            <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${isEmpty ? 'bg-yellow-500' : 'bg-green-500'}`} />
             {isEmpty ? 'Empty' : 'Active'}
           </span>
         );
@@ -57,5 +62,5 @@ export function DatabaseTable({ data }: { data: DatabaseStats[] }) {
     },
   ];
 
-  return <DataTable columns={columns} data={data} defaultSorting={[{ id: 'name', desc: false }]} />;
+  return <DataTable columns={columns} data={data} defaultSorting={[{ id: 'name', desc: false }]} emptyMessage='No databases found. Create one from the sidebar.' />;
 }

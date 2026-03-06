@@ -168,10 +168,21 @@ export async function dropCollectionIndex(dbName: string, collectionName: string
   await collection.dropIndex(indexName);
 }
 
-export async function getDocuments(dbName: string, collectionName: string, filter?: object) {
+export async function getDocuments(
+  dbName: string,
+  collectionName: string,
+  filter?: object,
+  skip?: number,
+  limit?: number,
+): Promise<{ documents: object[]; totalCount: number }> {
   const client = await clientPromise;
   const collection = client.db(dbName).collection(collectionName);
-  return collection.find(filter || {}).toArray();
+  const query = filter || {};
+  const [documents, totalCount] = await Promise.all([
+    collection.find(query).skip(skip ?? 0).limit(limit ?? 50).toArray(),
+    collection.countDocuments(query),
+  ]);
+  return { documents, totalCount };
 }
 
 export async function createDocument(dbName: string, collectionName: string, document: object) {
@@ -225,6 +236,77 @@ export async function clearCollection(dbName: string, collectionName: string) {
   const client = await clientPromise;
   const db = client.db(dbName);
   await db.collection(collectionName).deleteMany({});
+}
+
+// === Export Documents ===
+export async function exportCollection(dbName: string, collectionName: string) {
+  const client = await clientPromise;
+  const collection = client.db(dbName).collection(collectionName);
+  return collection.find({}).toArray();
+}
+
+// === Import Documents ===
+export async function importDocuments(dbName: string, collectionName: string, documents: object[]) {
+  'use server';
+  const { EJSON } = await import('bson');
+  const client = await clientPromise;
+  const collection = client.db(dbName).collection(collectionName);
+  if (documents.length === 0) return { insertedCount: 0 };
+  // Deserialize EJSON types back to proper MongoDB types
+  const deserialized = documents.map((doc) => EJSON.deserialize(doc as Record<string, unknown>));
+  const result = await collection.insertMany(deserialized);
+  return { insertedCount: result.insertedCount };
+}
+
+// === Database Backup (all collections) ===
+export async function backupDatabase(dbName: string) {
+  const client = await clientPromise;
+  const db = client.db(dbName);
+  const collections = await db.listCollections().toArray();
+  const backup: Record<string, object[]> = {};
+
+  for (const col of collections) {
+    backup[col.name] = await db.collection(col.name).find({}).toArray();
+  }
+
+  return backup;
+}
+
+// === Database Restore ===
+export async function restoreDatabase(dbName: string, backup: Record<string, object[]>) {
+  'use server';
+  const { EJSON } = await import('bson');
+  const client = await clientPromise;
+  const db = client.db(dbName);
+  const results: Record<string, number> = {};
+
+  for (const [collectionName, documents] of Object.entries(backup)) {
+    if (documents.length === 0) {
+      await db.createCollection(collectionName).catch(() => {});
+      results[collectionName] = 0;
+      continue;
+    }
+
+    // Deserialize EJSON types and strip _id to let MongoDB generate new ObjectIds
+    const cleanDocs = documents.map((doc: Record<string, unknown>) => {
+      const deserialized = EJSON.deserialize(doc);
+      const { _id, ...rest } = deserialized as Record<string, unknown>;
+      return rest;
+    });
+
+    await db.createCollection(collectionName).catch(() => {});
+    const result = await db.collection(collectionName).insertMany(cleanDocs);
+    results[collectionName] = result.insertedCount;
+  }
+
+  return results;
+}
+
+// === Aggregation Pipeline ===
+export async function runAggregation(dbName: string, collectionName: string, pipeline: object[]) {
+  const client = await clientPromise;
+  const collection = client.db(dbName).collection(collectionName);
+  return collection.aggregate(pipeline).toArray();
 }
 
 export { clientPromise };

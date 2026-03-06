@@ -8,10 +8,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, Eye, MoreHorizontal, Settings, Trash, Upload } from 'lucide-react';
+import { Download, Eye, FileSpreadsheet, MoreHorizontal, Settings, Trash, Layers } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -155,6 +155,8 @@ function CreateCollectionDialog(props: CreateCollectionProps) {
 }
 
 export function Table({ collections, databaseName, createCollection, deleteCollection }: Props) {
+  const [deletingCollection, setDeletingCollection] = useState<string | null>(null);
+
   const columns: Column[] = [
     {
       accessorKey: 'name',
@@ -177,74 +179,106 @@ export function Table({ collections, databaseName, createCollection, deleteColle
     },
     {
       id: 'actions',
-      size: 20,
-      maxSize: 20,
+      header: 'Actions',
       cell: ({ row }) => {
         const collection = row.original;
-
         const collectionUrl = `/databases/${databaseName}/${collection.name}`;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='h-8 w-8 p-0'>
-                <span className='sr-only'>Open menu</span>
-                <MoreHorizontal className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href={`${collectionUrl}/manage`}>
-                  <Settings className='mr-2 h-4 w-4' />
-                  Manage Collection
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={collectionUrl}>
-                  <Eye className='mr-2 h-4 w-4' />
-                  View Data
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log('export', collection.name)}>
-                <Download className='mr-2 h-4 w-4' />
-                Export Data
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log('import', collection.name)}>
-                <Upload className='mr-2 h-4 w-4' />
-                Import Data
-              </DropdownMenuItem>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem className='text-red-600' onSelect={(e) => e.preventDefault()}>
-                    <Trash className='mr-2 h-4 w-4' />
-                    Delete Collection
+          <TooltipProvider delayDuration={300}>
+            <div className='flex items-center gap-1'>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant='ghost' size='icon' className='h-8 w-8' asChild>
+                    <Link href={collectionUrl}>
+                      <Eye className='h-4 w-4' />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>View Data</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant='ghost' size='icon' className='h-8 w-8' asChild>
+                    <Link href={`${collectionUrl}/manage`}>
+                      <Settings className='h-4 w-4' />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Manage</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant='ghost' size='icon' className='h-8 w-8' asChild>
+                    <Link href={`${collectionUrl}/aggregate`}>
+                      <Layers className='h-4 w-4' />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Aggregation</TooltipContent>
+              </Tooltip>
+
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant='ghost' size='icon' className='h-8 w-8'>
+                        <MoreHorizontal className='h-4 w-4' />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>More</TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align='end'>
+                  <DropdownMenuItem onClick={() => window.open(`/api/export/${databaseName}/${collection.name}`, '_blank')}>
+                    <Download className='mr-2 h-4 w-4' />
+                    Export JSON
                   </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the collection &#34;{collection.name}
-                      &#34; and remove all its data.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => {
-                        deleteCollection(databaseName, collection.name).then(() => {
-                          window.location.reload();
-                        });
-                      }}
-                    >
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <DropdownMenuItem onClick={() => window.open(`/api/export/${databaseName}/${collection.name}/csv`, '_blank')}>
+                    <FileSpreadsheet className='mr-2 h-4 w-4' />
+                    Export CSV
+                  </DropdownMenuItem>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem className='text-red-600' onSelect={(e) => e.preventDefault()}>
+                        <Trash className='mr-2 h-4 w-4' />
+                        Delete Collection
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the collection &quot;{collection.name}
+                          &quot; and remove all its data.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deletingCollection === collection.name}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={deletingCollection === collection.name}
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            setDeletingCollection(collection.name);
+                            try {
+                              await deleteCollection(databaseName, collection.name);
+                              window.location.reload();
+                            } finally {
+                              setDeletingCollection(null);
+                            }
+                          }}
+                        >
+                          {deletingCollection === collection.name ? 'Deleting...' : 'Continue'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </TooltipProvider>
         );
       },
     },
@@ -255,7 +289,7 @@ export function Table({ collections, databaseName, createCollection, deleteColle
       <div className='flex justify-end'>
         <CreateCollectionDialog databaseName={databaseName} createCollection={createCollection} />
       </div>
-      <DataTable columns={columns} data={JSON.parse(collections)} defaultSorting={[{ id: 'name', desc: false }]} />
+      <DataTable columns={columns} data={JSON.parse(collections)} defaultSorting={[{ id: 'name', desc: false }]} emptyMessage='No collections in this database. Create one above.' />
     </div>
   );
 }

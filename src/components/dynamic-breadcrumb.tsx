@@ -23,11 +23,15 @@ export function DynamicBreadcrumb() {
 
       let displayText = segment;
       if (segment === params.databaseName) {
-        displayText = `Database: ${segment}`;
+        displayText = `${segment}`;
       } else if (segment === params.collectionName) {
-        displayText = `Collection: ${segment}`;
+        displayText = `${segment}`;
       } else if (segment === 'databases') {
         displayText = 'Databases';
+      } else if (segment === 'manage') {
+        displayText = 'Manage';
+      } else if (segment === 'aggregate') {
+        displayText = 'Aggregation';
       }
 
       if (index === segments.length - 1) {

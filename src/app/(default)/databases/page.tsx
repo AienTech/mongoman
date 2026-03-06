@@ -1,10 +1,10 @@
 // app/databases/page.tsx
 import { getDatabases, getDatabaseStats } from '@/lib/mongodb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { DatabaseTable } from './table';
 import { EJSON } from 'bson';
+import { Database } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default async function DatabasesPage() {
   // Get all databases and their stats
@@ -34,28 +34,30 @@ export default async function DatabasesPage() {
   );
 
   return (
-    <div className='space-y-6'>
-      <div className='flex justify-between items-center'>
-        <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Databases</h1>
-          <p className='text-muted-foreground'>Manage your MongoDB databases</p>
+    <div className='p-6 space-y-6'>
+      <div className='flex items-center gap-3'>
+        <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10'>
+          <Database className='h-5 w-5 text-primary' />
         </div>
-        <Button asChild>
-          <Link href='/databases/create'>Create Database</Link>
-        </Button>
+        <div>
+          <h1 className='text-2xl font-bold tracking-tight'>Databases</h1>
+          <p className='text-sm text-muted-foreground'>
+            {databases.length} {databases.length === 1 ? 'database' : 'databases'} on this instance
+          </p>
+        </div>
       </div>
 
-      <div className='grid gap-4'>
-        <Card>
-          <CardHeader>
-            <CardTitle>System Overview</CardTitle>
-            <CardDescription>Your MongoDB instance currently has {databases.length} databases</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DatabaseTable data={databaseStats} />
-          </CardContent>
-        </Card>
-      </div>
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Databases</CardTitle>
+          <CardDescription>Click a database name to manage its collections</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DatabaseTable data={databaseStats} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

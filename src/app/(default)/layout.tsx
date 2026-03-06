@@ -4,8 +4,10 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { Separator } from '@/components/ui/separator';
 import { getDatabases, createDatabase, deleteDatabase } from '@/lib/mongodb';
 import { DynamicBreadcrumb } from '@/components/dynamic-breadcrumb';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { EJSON } from 'bson';
 import { DatabaseInfo } from '@/lib/types';
+import { getSession, isAuthEnabled } from '@/lib/auth';
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   const databasesResult = await getDatabases();
@@ -27,6 +29,9 @@ export default async function RootLayout({ children }: PropsWithChildren) {
     }
   }
 
+  const authEnabled = isAuthEnabled();
+  const session = await getSession();
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -34,14 +39,17 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         dbHost={dbHost}
         createDatabase={createDatabase}
         deleteDatabase={deleteDatabase}
+        authEnabled={authEnabled}
+        username={session?.username}
       />
       <SidebarInset>
-        <header className='flex h-16 shrink-0 items-center gap-2 border-b'>
-          <div className='flex items-center gap-2 px-3'>
+        <header className='flex h-16 shrink-0 items-center justify-between border-b px-3'>
+          <div className='flex items-center gap-2'>
             <SidebarTrigger />
             <Separator orientation='vertical' className='mr-2 h-4' />
             <DynamicBreadcrumb />
           </div>
+          <ThemeToggle />
         </header>
         <div className='flex flex-1 flex-col gap-4 p-4'>{children}</div>
       </SidebarInset>

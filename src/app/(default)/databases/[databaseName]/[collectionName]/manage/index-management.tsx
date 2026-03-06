@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { formatBytes } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +47,7 @@ const CreateIndexSchema = z.object({
 type CreateIndexForm = z.infer<typeof CreateIndexSchema>;
 
 export function IndexManagement({ databaseName, collectionName, indexes, createIndex, deleteIndex }: IndexProps) {
+  const { toast } = useToast();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,9 +73,10 @@ export function IndexManagement({ databaseName, collectionName, indexes, createI
       await createIndex(databaseName, collectionName, fields, options);
       setCreateDialogOpen(false);
       form.reset();
+      toast({ title: 'Index created', description: 'Successfully created new index' });
       window.location.reload();
-    } catch (error) {
-      console.error('Failed to create index:', error);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to create index', variant: 'destructive' });
     } finally {
       setIsCreating(false);
     }
@@ -83,9 +86,10 @@ export function IndexManagement({ databaseName, collectionName, indexes, createI
     try {
       setIsDeleting(true);
       await deleteIndex(databaseName, collectionName, indexName);
+      toast({ title: 'Index deleted', description: `Successfully deleted index "${indexName}"` });
       window.location.reload();
-    } catch (error) {
-      console.error('Failed to delete index:', error);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to delete index', variant: 'destructive' });
     } finally {
       setIsDeleting(false);
     }
@@ -94,7 +98,12 @@ export function IndexManagement({ databaseName, collectionName, indexes, createI
   return (
     <Card>
       <CardHeader className='flex flex-row items-center justify-between'>
-        <CardTitle>Indexes</CardTitle>
+        <div className='flex items-center gap-3'>
+          <CardTitle>Indexes</CardTitle>
+          <span className='text-sm text-muted-foreground'>
+            {indexes.length} {indexes.length === 1 ? 'index' : 'indexes'}
+          </span>
+        </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Index</Button>
@@ -155,7 +164,21 @@ export function IndexManagement({ databaseName, collectionName, indexes, createI
             {indexes.map((index) => (
               <TableRow key={index.name}>
                 <TableCell className='font-mono'>{index.name}</TableCell>
-                <TableCell>{JSON.stringify(index.key)}</TableCell>
+                <TableCell>
+                  <div className='flex flex-wrap gap-1'>
+                    {Object.entries(index.key ?? {}).map(([field, dir]) => (
+                      <span
+                        key={field}
+                        className='inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-mono'
+                      >
+                        {field}
+                        <span className={`font-semibold ${Number(dir) === 1 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                          {Number(dir) === 1 ? 'ASC' : 'DESC'}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
                 <TableCell>{index.size ? formatBytes(index.size) : 'N/A'}</TableCell>
                 <TableCell>
                   {index.name !== '_id_' && (

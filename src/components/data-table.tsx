@@ -11,14 +11,16 @@ import {
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useState } from 'react';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   defaultSorting?: SortingState;
+  emptyMessage?: string;
 }
 
-export function DataTable<TData, TValue>({ columns, data, defaultSorting = [] }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, defaultSorting = [], emptyMessage = 'No results found.' }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSorting);
 
   const table = useReactTable({
@@ -38,9 +40,24 @@ export function DataTable<TData, TValue>({ columns, data, defaultSorting = [] }:
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => {
+              const canSort = header.column.getCanSort();
+              const sorted = header.column.getIsSorted();
               return (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                <TableHead
+                  key={header.id}
+                  className={canSort ? 'cursor-pointer select-none' : ''}
+                  onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                >
+                  {header.isPlaceholder ? null : (
+                    <div className='flex items-center gap-1'>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {canSort && (
+                        sorted === 'asc' ? <ArrowUp className='h-3.5 w-3.5 text-foreground' /> :
+                        sorted === 'desc' ? <ArrowDown className='h-3.5 w-3.5 text-foreground' /> :
+                        <ArrowUpDown className='h-3.5 w-3.5 text-muted-foreground/50' />
+                      )}
+                    </div>
+                  )}
                 </TableHead>
               );
             })}
@@ -58,8 +75,8 @@ export function DataTable<TData, TValue>({ columns, data, defaultSorting = [] }:
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={columns.length} className='h-24 text-center'>
-              No collections found.
+            <TableCell colSpan={columns.length} className='h-24 text-center text-muted-foreground'>
+              {emptyMessage}
             </TableCell>
           </TableRow>
         )}

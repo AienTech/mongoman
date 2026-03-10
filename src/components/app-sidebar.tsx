@@ -146,67 +146,67 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Databases</SidebarGroupLabel>
           <SidebarMenu>
-            {databases.databases.length
-              ? databases.databases.map((database) => {
-                  return (
-                    <SidebarMenuItem key={database.name}>
-                      <SidebarMenuButton asChild>
-                        <a href={`/databases/${database.name}`} className='font-medium'>
-                          <Database />
-                          {database.name}
-                        </a>
-                      </SidebarMenuButton>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <SidebarMenuAction>
-                            <MoreHorizontal />
-                          </SidebarMenuAction>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side={'right'} align={'start'}>
-                          <DropdownMenuItem asChild>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button className='w-full justify-start' variant='ghost'>
-                                  Delete
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your database and remove
-                                    all your data.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel disabled={deletingDb === database.name}>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    disabled={deletingDb === database.name}
-                                    onClick={async (e) => {
-                                      e.preventDefault();
-                                      setDeletingDb(database.name);
-                                      try {
-                                        await deleteDatabase(database.name);
-                                        window.location.reload();
-                                      } finally {
-                                        setDeletingDb(null);
-                                      }
-                                    }}
-                                  >
-                                    {deletingDb === database.name ? 'Deleting...' : 'Continue'}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </SidebarMenuItem>
-                  );
-                })
-              : (
-                  <p className='px-2 py-4 text-sm text-sidebar-foreground/50'>No databases yet</p>
-                )}
+            {databases.databases.length ? (
+              databases.databases.map((database) => {
+                return (
+                  <SidebarMenuItem key={database.name}>
+                    <SidebarMenuButton asChild>
+                      <a href={`/databases/${database.name}`} className='font-medium'>
+                        <Database />
+                        {database.name}
+                      </a>
+                    </SidebarMenuButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction>
+                          <MoreHorizontal />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side={'right'} align={'start'}>
+                        <DropdownMenuItem asChild>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button className='w-full justify-start' variant='ghost'>
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete your database and remove
+                                  all your data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={deletingDb === database.name}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={deletingDb === database.name}
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    setDeletingDb(database.name);
+                                    try {
+                                      await deleteDatabase(database.name);
+                                      window.location.reload();
+                                    } finally {
+                                      setDeletingDb(null);
+                                    }
+                                  }}
+                                >
+                                  {deletingDb === database.name ? 'Deleting...' : 'Continue'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuItem>
+                );
+              })
+            ) : (
+              <p className='px-2 py-4 text-sm text-sidebar-foreground/50'>No databases yet</p>
+            )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Dialog onOpenChange={setIsOpen} open={isOpen} modal={true}>

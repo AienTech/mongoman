@@ -8,11 +8,7 @@ import { Separator } from '@/components/ui/separator';
 export default async function Page({ params }: PageParamsWithCollection) {
   const { collectionName, databaseName } = await params;
 
-  const runSerializedAggregation = async (
-    dbName: string,
-    collName: string,
-    pipeline: object[],
-  ) => {
+  const runSerializedAggregation = async (dbName: string, collName: string, pipeline: object[]) => {
     'use server';
     const results = await runAggregation(dbName, collName, pipeline);
     return results.map((doc) => EJSON.serialize(doc));

@@ -13,11 +13,31 @@ interface StatsProps {
 export function CollectionStats({ stats }: StatsProps) {
   const statItems: { label: string; value: string | number; icon: LucideIcon; color: string }[] = [
     { label: 'Documents', value: stats?.count ?? 0, icon: FileText, color: 'text-blue-500 bg-blue-500/10' },
-    { label: 'Total Size', value: formatBytes(stats?.size ?? 0), icon: HardDrive, color: 'text-green-500 bg-green-500/10' },
-    { label: 'Avg Doc Size', value: formatBytes(stats?.avgObjSize ?? 0), icon: Scale, color: 'text-purple-500 bg-purple-500/10' },
-    { label: 'Storage', value: formatBytes(stats?.storageSize ?? 0), icon: Archive, color: 'text-orange-500 bg-orange-500/10' },
+    {
+      label: 'Total Size',
+      value: formatBytes(stats?.size ?? 0),
+      icon: HardDrive,
+      color: 'text-green-500 bg-green-500/10',
+    },
+    {
+      label: 'Avg Doc Size',
+      value: formatBytes(stats?.avgObjSize ?? 0),
+      icon: Scale,
+      color: 'text-purple-500 bg-purple-500/10',
+    },
+    {
+      label: 'Storage',
+      value: formatBytes(stats?.storageSize ?? 0),
+      icon: Archive,
+      color: 'text-orange-500 bg-orange-500/10',
+    },
     { label: 'Indexes', value: stats?.nindexes ?? 0, icon: Layers, color: 'text-cyan-500 bg-cyan-500/10' },
-    { label: 'Index Size', value: formatBytes(stats?.totalIndexSize ?? 0), icon: Hash, color: 'text-pink-500 bg-pink-500/10' },
+    {
+      label: 'Index Size',
+      value: formatBytes(stats?.totalIndexSize ?? 0),
+      icon: Hash,
+      color: 'text-pink-500 bg-pink-500/10',
+    },
   ];
 
   return (

@@ -75,12 +75,7 @@ export async function authenticate(username: string, password: string): Promise<
     return { username, role: 'admin', expiresAt: Date.now() + SESSION_DURATION };
   }
 
-  if (
-    readOnlyUser &&
-    readOnlyPass &&
-    safeCompare(username, readOnlyUser) &&
-    safeCompare(password, readOnlyPass)
-  ) {
+  if (readOnlyUser && readOnlyPass && safeCompare(username, readOnlyUser) && safeCompare(password, readOnlyPass)) {
     return { username, role: 'readOnly', expiresAt: Date.now() + SESSION_DURATION };
   }
 

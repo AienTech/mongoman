@@ -40,9 +40,7 @@ export default async function Page({ params }: PageParamsWithCollection) {
         </div>
         <div>
           <h1 className='text-2xl font-bold tracking-tight'>{collectionName}</h1>
-          <p className='text-sm text-muted-foreground'>
-            Browse and manage documents in {databaseName}
-          </p>
+          <p className='text-sm text-muted-foreground'>Browse and manage documents in {databaseName}</p>
         </div>
       </div>
 

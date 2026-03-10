@@ -63,11 +63,7 @@ interface AggregationPipelineProps {
   runAggregation: (dbName: string, collectionName: string, pipeline: object[]) => Promise<object[]>;
 }
 
-export function AggregationPipeline({
-  databaseName,
-  collectionName,
-  runAggregation,
-}: AggregationPipelineProps) {
+export function AggregationPipeline({ databaseName, collectionName, runAggregation }: AggregationPipelineProps) {
   const { resolvedTheme } = useTheme();
   const [mode, setMode] = useState<'visual' | 'raw'>('visual');
   const [stages, setStages] = useState<PipelineStage[]>([]);
@@ -77,10 +73,7 @@ export function AggregationPipeline({
   const [isRunning, setIsRunning] = useState(false);
 
   const addStage = useCallback((type: string) => {
-    setStages((prev) => [
-      ...prev,
-      { id: stageId(), type, value: STAGE_TEMPLATES[type] || '{}', enabled: true },
-    ]);
+    setStages((prev) => [...prev, { id: stageId(), type, value: STAGE_TEMPLATES[type] || '{}', enabled: true }]);
   }, []);
 
   const removeStage = useCallback((id: string) => {
@@ -215,9 +208,7 @@ export function AggregationPipeline({
                 <div key={stage.id} className='rounded-md border p-3 space-y-2'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'>
-                      <span className='text-xs font-mono bg-primary/10 px-2 py-0.5 rounded'>
-                        {index + 1}
-                      </span>
+                      <span className='text-xs font-mono bg-primary/10 px-2 py-0.5 rounded'>{index + 1}</span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline' size='sm' className='h-7'>
@@ -229,7 +220,9 @@ export function AggregationPipeline({
                           {STAGE_TYPES.map((st) => (
                             <DropdownMenuItem
                               key={st.value}
-                              onClick={() => updateStage(stage.id, { type: st.value, value: STAGE_TEMPLATES[st.value] || '{}' })}
+                              onClick={() =>
+                                updateStage(stage.id, { type: st.value, value: STAGE_TEMPLATES[st.value] || '{}' })
+                              }
                             >
                               <span className='font-mono text-xs'>{st.label}</span>
                               <span className='ml-2 text-xs text-muted-foreground'>{st.description}</span>

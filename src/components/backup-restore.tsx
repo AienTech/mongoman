@@ -131,8 +131,8 @@ export function BackupRestore({ databaseName, restoreDatabase }: BackupRestorePr
             <DialogHeader>
               <DialogTitle>Restore Database</DialogTitle>
               <DialogDescription>
-                Upload a backup JSON file to restore collections into {databaseName}.
-                Existing collections with the same names will have documents appended.
+                Upload a backup JSON file to restore collections into {databaseName}. Existing collections with the same
+                names will have documents appended.
               </DialogDescription>
             </DialogHeader>
             <div className='space-y-4'>
@@ -165,8 +165,8 @@ export function BackupRestore({ databaseName, restoreDatabase }: BackupRestorePr
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Restore</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will insert documents from the backup into {databaseName}.
-                          This action may create new collections and add documents. Continue?
+                          This will insert documents from the backup into {databaseName}. This action may create new
+                          collections and add documents. Continue?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

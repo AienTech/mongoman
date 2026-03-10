@@ -81,6 +81,7 @@ docker pull ghcr.io/aientech/mongoman:0.1.1
 ```
 
 Available tags:
+
 - `latest` - Latest stable release
 - `main` - Latest development build
 - `0.1.1`, `v0.1.1` - Specific version tags
@@ -91,6 +92,7 @@ See [GitHub Releases](https://github.com/AienTech/mongoman/releases) for all ava
 ## Releases
 
 MongoMan uses semantic versioning for releases. Each release includes:
+
 - Versioned Docker images on GitHub Container Registry
 - Automated changelog
 - Installation instructions
@@ -123,7 +125,7 @@ Contributions are always welcome! Here's how you can help:
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+5. Open a Pull Request against `next` branch
 
 ## License
 

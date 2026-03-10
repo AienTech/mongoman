@@ -12,17 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Plus, Trash2, ChevronDown, Code, SlidersHorizontal } from 'lucide-react';
 
-type Operator =
-  | '$eq'
-  | '$ne'
-  | '$gt'
-  | '$gte'
-  | '$lt'
-  | '$lte'
-  | '$in'
-  | '$nin'
-  | '$regex'
-  | '$exists';
+type Operator = '$eq' | '$ne' | '$gt' | '$gte' | '$lt' | '$lte' | '$in' | '$nin' | '$regex' | '$exists';
 
 interface QueryCondition {
   id: string;
@@ -106,9 +96,7 @@ interface QueryBuilderProps {
 export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuilderProps) {
   const [mode, setMode] = useState<'visual' | 'raw'>(initialQuery ? 'raw' : 'visual');
   const [rawQuery, setRawQuery] = useState(initialQuery || '');
-  const [groups, setGroups] = useState<QueryGroup[]>([
-    { id: uid(), logic: '$and', conditions: [] },
-  ]);
+  const [groups, setGroups] = useState<QueryGroup[]>([{ id: uid(), logic: '$and', conditions: [] }]);
 
   const addCondition = useCallback((groupId: string) => {
     setGroups((prev) =>
@@ -122,29 +110,22 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
 
   const removeCondition = useCallback((groupId: string, conditionId: string) => {
     setGroups((prev) =>
+      prev.map((g) => (g.id === groupId ? { ...g, conditions: g.conditions.filter((c) => c.id !== conditionId) } : g)),
+    );
+  }, []);
+
+  const updateCondition = useCallback((groupId: string, conditionId: string, updates: Partial<QueryCondition>) => {
+    setGroups((prev) =>
       prev.map((g) =>
-        g.id === groupId ? { ...g, conditions: g.conditions.filter((c) => c.id !== conditionId) } : g,
+        g.id === groupId
+          ? { ...g, conditions: g.conditions.map((c) => (c.id === conditionId ? { ...c, ...updates } : c)) }
+          : g,
       ),
     );
   }, []);
 
-  const updateCondition = useCallback(
-    (groupId: string, conditionId: string, updates: Partial<QueryCondition>) => {
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.id === groupId
-            ? { ...g, conditions: g.conditions.map((c) => (c.id === conditionId ? { ...c, ...updates } : c)) }
-            : g,
-        ),
-      );
-    },
-    [],
-  );
-
   const toggleGroupLogic = useCallback((groupId: string) => {
-    setGroups((prev) =>
-      prev.map((g) => (g.id === groupId ? { ...g, logic: g.logic === '$and' ? '$or' : '$and' } : g)),
-    );
+    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, logic: g.logic === '$and' ? '$or' : '$and' } : g)));
   }, []);
 
   const addGroup = useCallback(() => {
@@ -173,11 +154,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
       <CardHeader className='flex flex-row items-center justify-between pb-3'>
         <CardTitle className='text-sm font-medium'>Query Filter</CardTitle>
         <div className='flex gap-1'>
-          <Button
-            variant={mode === 'visual' ? 'default' : 'outline'}
-            size='sm'
-            onClick={() => setMode('visual')}
-          >
+          <Button variant={mode === 'visual' ? 'default' : 'outline'} size='sm' onClick={() => setMode('visual')}>
             <SlidersHorizontal className='mr-1 h-3 w-3' />
             Visual
           </Button>
@@ -216,9 +193,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
               <div key={group.id} className='rounded-md border p-3 space-y-2'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-2'>
-                    {groupIndex > 0 && (
-                      <span className='text-xs text-muted-foreground uppercase font-medium'>AND</span>
-                    )}
+                    {groupIndex > 0 && <span className='text-xs text-muted-foreground uppercase font-medium'>AND</span>}
                     <Button
                       variant='outline'
                       size='sm'
@@ -264,9 +239,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
                             {f}
                           </DropdownMenuItem>
                         ))}
-                        <DropdownMenuItem
-                          onClick={() => updateCondition(group.id, condition.id, { field: '' })}
-                        >
+                        <DropdownMenuItem onClick={() => updateCondition(group.id, condition.id, { field: '' })}>
                           <span className='italic text-muted-foreground'>Custom...</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -277,9 +250,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
                       <Input
                         placeholder='field name'
                         value={condition.field}
-                        onChange={(e) =>
-                          updateCondition(group.id, condition.id, { field: e.target.value })
-                        }
+                        onChange={(e) => updateCondition(group.id, condition.id, { field: e.target.value })}
                         className='w-[120px] h-8'
                       />
                     )}
@@ -296,9 +267,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
                         {OPERATORS.map((op) => (
                           <DropdownMenuItem
                             key={op.value}
-                            onClick={() =>
-                              updateCondition(group.id, condition.id, { operator: op.value })
-                            }
+                            onClick={() => updateCondition(group.id, condition.id, { operator: op.value })}
                           >
                             {op.label}
                           </DropdownMenuItem>
@@ -310,9 +279,7 @@ export function QueryBuilder({ fields, onQueryChange, initialQuery }: QueryBuild
                     <Input
                       placeholder='value'
                       value={condition.value}
-                      onChange={(e) =>
-                        updateCondition(group.id, condition.id, { value: e.target.value })
-                      }
+                      onChange={(e) => updateCondition(group.id, condition.id, { value: e.target.value })}
                       className='flex-1 h-8'
                     />
 

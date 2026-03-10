@@ -31,9 +31,7 @@ export default async function Page({ params }: PageParamsWithCollection) {
         </div>
         <div>
           <h1 className='text-2xl font-bold tracking-tight'>{collectionName}</h1>
-          <p className='text-sm text-muted-foreground'>
-            Manage collection in {databaseName}
-          </p>
+          <p className='text-sm text-muted-foreground'>Manage collection in {databaseName}</p>
         </div>
       </div>
       <Separator />
@@ -50,11 +48,7 @@ export default async function Page({ params }: PageParamsWithCollection) {
           clearCollection={clearCollection}
         />
 
-        <ImportExport
-          databaseName={databaseName}
-          collectionName={collectionName}
-          importDocuments={importDocuments}
-        />
+        <ImportExport databaseName={databaseName} collectionName={collectionName} importDocuments={importDocuments} />
       </div>
 
       <div className='space-y-6'>

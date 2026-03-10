@@ -5,6 +5,7 @@ This document describes how to create and publish new releases of MongoMan.
 ## Overview
 
 MongoMan uses a hybrid release system:
+
 - **Development builds**: Pushing to `main` branch creates Docker images tagged as `latest`
 - **Versioned releases**: Pushing version tags (e.g., `v0.1.2`) creates:
   - Docker images with version tags (`0.1.2`, `v0.1.2`, `0.1`)
@@ -36,6 +37,7 @@ Edit `package.json` and update the version number following [Semantic Versioning
 ```
 
 **Semantic Versioning Guide:**
+
 - **Major** (1.0.0): Breaking changes, incompatible API changes
 - **Minor** (0.1.0): New features, backward-compatible
 - **Patch** (0.0.1): Bug fixes, backward-compatible
@@ -97,15 +99,16 @@ Before creating a release, ensure:
 
 Each release creates multiple Docker image tags:
 
-| Tag Format | Example | Description |
-|------------|---------|-------------|
-| `latest` | `latest` | Always points to the most recent main branch build |
-| `X.Y.Z` | `0.1.2` | Exact version tag (without `v` prefix) |
-| `vX.Y.Z` | `v0.1.2` | Exact version tag (with `v` prefix) |
-| `X.Y` | `0.1` | Minor version tag (auto-updated for patches) |
-| `main-SHA` | `main-abc1234` | Commit SHA for traceability |
+| Tag Format | Example        | Description                                        |
+| ---------- | -------------- | -------------------------------------------------- |
+| `latest`   | `latest`       | Always points to the most recent main branch build |
+| `X.Y.Z`    | `0.1.2`        | Exact version tag (without `v` prefix)             |
+| `vX.Y.Z`   | `v0.1.2`       | Exact version tag (with `v` prefix)                |
+| `X.Y`      | `0.1`          | Minor version tag (auto-updated for patches)       |
+| `main-SHA` | `main-abc1234` | Commit SHA for traceability                        |
 
 **Recommended usage:**
+
 - **Production**: Use exact version tags (`0.1.2` or `v0.1.2`)
 - **Development/Testing**: Use `latest` tag
 
@@ -152,7 +155,8 @@ Then manually delete the GitHub Release from the [Releases page](../../releases)
 
 **Problem**: The Docker workflow fails with a version mismatch error.
 
-**Solution**: 
+**Solution**:
+
 1. Delete the tag: `git tag -d v0.1.2 && git push origin :refs/tags/v0.1.2`
 2. Fix the version in `package.json`
 3. Commit and push the fix
@@ -163,6 +167,7 @@ Then manually delete the GitHub Release from the [Releases page](../../releases)
 **Problem**: GitHub Release wasn't created after pushing a tag.
 
 **Solution**:
+
 1. Verify the tag format matches `v*.*.*` (e.g., `v0.1.2`)
 2. Check the [Actions tab](../../actions) for errors
 3. Re-run the workflow manually if needed
@@ -172,6 +177,7 @@ Then manually delete the GitHub Release from the [Releases page](../../releases)
 **Problem**: Can't pull the Docker image after release.
 
 **Solution**:
+
 1. Check if the workflow completed successfully
 2. Verify you're using the correct image name: `ghcr.io/aientech/mongoman:0.1.2`
 3. Ensure the package is public or you're authenticated to GHCR

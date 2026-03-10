@@ -3,10 +3,7 @@ import { backupDatabase } from '@/lib/mongodb';
 import { requireAuth } from '@/lib/auth';
 import { EJSON } from 'bson';
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ databaseName: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ databaseName: string }> }) {
   try {
     await requireAuth();
   } catch {

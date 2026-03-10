@@ -62,5 +62,12 @@ export function DatabaseTable({ data }: { data: DatabaseStats[] }) {
     },
   ];
 
-  return <DataTable columns={columns} data={data} defaultSorting={[{ id: 'name', desc: false }]} emptyMessage='No databases found. Create one from the sidebar.' />;
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      defaultSorting={[{ id: 'name', desc: false }]}
+      emptyMessage='No databases found. Create one from the sidebar.'
+    />
+  );
 }

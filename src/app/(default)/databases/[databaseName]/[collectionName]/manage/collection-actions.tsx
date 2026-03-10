@@ -167,12 +167,22 @@ export function CollectionActions({
           </DialogContent>
         </Dialog>
 
-        <Button variant='outline' className='w-full justify-start gap-2' onClick={handleReindex} disabled={isLoading === 'reindex'}>
+        <Button
+          variant='outline'
+          className='w-full justify-start gap-2'
+          onClick={handleReindex}
+          disabled={isLoading === 'reindex'}
+        >
           <RefreshCw className={`h-4 w-4 ${isLoading === 'reindex' ? 'animate-spin' : ''}`} />
           {isLoading === 'reindex' ? 'Reindexing...' : 'Reindex'}
         </Button>
 
-        <Button variant='outline' className='w-full justify-start gap-2' onClick={handleCompact} disabled={isLoading === 'compact'}>
+        <Button
+          variant='outline'
+          className='w-full justify-start gap-2'
+          onClick={handleCompact}
+          disabled={isLoading === 'compact'}
+        >
           <Minimize2 className='h-4 w-4' />
           {isLoading === 'compact' ? 'Compacting...' : 'Compact'}
         </Button>

@@ -172,7 +172,9 @@ export function IndexManagement({ databaseName, collectionName, indexes, createI
                         className='inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-mono'
                       >
                         {field}
-                        <span className={`font-semibold ${Number(dir) === 1 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                        <span
+                          className={`font-semibold ${Number(dir) === 1 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}
+                        >
                           {Number(dir) === 1 ? 'ASC' : 'DESC'}
                         </span>
                       </span>

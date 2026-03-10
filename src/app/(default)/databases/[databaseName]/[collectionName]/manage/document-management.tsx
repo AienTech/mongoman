@@ -19,6 +19,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { JsonViewer } from '@/components/json-viewer';
 import { useCallback, useEffect, useState } from 'react';
 import { getUniqueKeys } from '@/lib/utils';
 import Editor from '@/components/editor';
@@ -126,11 +128,11 @@ function DocumentDialog({
 }: DocumentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='max-w-4xl w-[95vw] sm:w-[90vw] max-h-[90vh] overflow-y-auto flex flex-col'>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className='grid gap-4 py-4'>
+        <div className='py-4 min-w-0'>
           <Editor initialValue={initialValue} onChange={onValueChange} />
         </div>
         <div className='flex justify-end gap-2'>
@@ -162,7 +164,9 @@ function Pagination({ page, pageSize, totalCount, onPageChange, onPageSizeChange
     <div className='flex items-center justify-between gap-4 pt-2'>
       <div className='text-sm text-muted-foreground'>
         {totalCount > 0 ? (
-          <>Showing {startItem}-{endItem} of {totalCount.toLocaleString()}</>
+          <>
+            Showing {startItem}-{endItem} of {totalCount.toLocaleString()}
+          </>
         ) : (
           'No documents'
         )}
@@ -171,14 +175,14 @@ function Pagination({ page, pageSize, totalCount, onPageChange, onPageSizeChange
       <div className='flex items-center gap-4'>
         <div className='flex items-center gap-2'>
           <span className='text-sm text-muted-foreground whitespace-nowrap'>Per page</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(val) => onPageSizeChange(Number(val))}
-          >
+          <Select value={String(pageSize)} onValueChange={(val) => onPageSizeChange(Number(val))}>
             <SelectTrigger className='h-8 w-[70px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value='5'>5</SelectItem>
+              <SelectItem value='10'>10</SelectItem>
+              <SelectItem value='20'>20</SelectItem>
               <SelectItem value='50'>50</SelectItem>
               <SelectItem value='100'>100</SelectItem>
               <SelectItem value='500'>500</SelectItem>
@@ -277,7 +281,7 @@ export function DocumentManagement({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetchDocuments = useCallback(
     async (currentPage: number, currentPageSize: number, query?: string) => {
@@ -452,31 +456,87 @@ export function DocumentManagement({
         </Dialog>
       </CardHeader>
       <CardContent className='space-y-4'>
-        <QueryBuilder
-          fields={getUniqueKeys(documents)}
-          onQueryChange={(query) => {
-            setSearchQuery(query);
-            setPage(0); // Reset to first page on new query
-          }}
-          initialQuery={searchQuery}
-        />
-
-        {isLoadingDocs ? (
-          <div className='space-y-2'>
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
+        <Tabs defaultValue="table" className="w-full">
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="w-full relative z-20">
+              <QueryBuilder
+                fields={getUniqueKeys(documents)}
+                onQueryChange={(query) => {
+                  setSearchQuery(query);
+                  setPage(0); // Reset to first page on new query
+                }}
+                initialQuery={searchQuery}
+              />
+            </div>
+            <div className="flex justify-start">
+              <TabsList className="shrink-0">
+                <TabsTrigger value="table">Table</TabsTrigger>
+                <TabsTrigger value="json">JSON</TabsTrigger>
+              </TabsList>
+            </div>
           </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={documents}
-            defaultSorting={[{ id: '_id', desc: false }]}
-            emptyMessage={searchQuery ? 'No documents match your query.' : 'This collection is empty. Create your first document.'}
-          />
-        )}
+
+          <TabsContent value="table" className="mt-0 space-y-4">
+            {isLoadingDocs ? (
+              <div className='space-y-2'>
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+              </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={documents}
+                defaultSorting={[{ id: '_id', desc: false }]}
+                emptyMessage={
+                  searchQuery ? 'No documents match your query.' : 'This collection is empty. Create your first document.'
+                }
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="json" className="mt-0 space-y-4">
+            {isLoadingDocs ? (
+              <div className='space-y-2'>
+                <Skeleton className='h-32 w-full' />
+                <Skeleton className='h-32 w-full' />
+                <Skeleton className='h-32 w-full' />
+              </div>
+            ) : documents.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground border rounded-md">
+                {searchQuery ? 'No documents match your query.' : 'This collection is empty. Create your first document.'}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {documents.map((doc) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const docId = doc._id?.$oid || doc._id;
+                  return (
+                    <Card key={docId} className="overflow-hidden shadow-sm">
+                      <div className="bg-muted/40 border-b px-4 py-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <span className="font-mono text-xs text-foreground bg-background px-2 py-0.5 rounded-sm border">{docId}</span>
+                        </span>
+                        <DocumentActions
+                          document={doc}
+                          onEdit={handleEdit}
+                          onView={handleView}
+                          onDelete={handleDeleteDocument}
+                          isDeleting={deletingDocId === doc._id}
+                        />
+                      </div>
+                      <div className="p-0">
+                        <JsonViewer data={doc} initiallyExpanded={true} className="border-none rounded-none bg-transparent" />
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         <Pagination
           page={page}
@@ -512,12 +572,12 @@ export function DocumentManagement({
         />
 
         <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-          <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+          <DialogContent className='max-w-4xl w-[95vw] sm:w-[90vw] max-h-[90vh] overflow-y-auto flex flex-col'>
             <DialogHeader>
               <DialogTitle>View Document</DialogTitle>
             </DialogHeader>
-            <div className='py-4'>
-              <Editor initialValue={documentContent} onChange={() => {}} readOnly />
+            <div className='py-4 min-w-0'>
+              <Editor initialValue={documentContent} onChange={() => { }} readOnly />
             </div>
             <div className='flex justify-end gap-2'>
               <Button

@@ -179,7 +179,11 @@ export async function getDocuments(
   const collection = client.db(dbName).collection(collectionName);
   const query = filter || {};
   const [documents, totalCount] = await Promise.all([
-    collection.find(query).skip(skip ?? 0).limit(limit ?? 50).toArray(),
+    collection
+      .find(query)
+      .skip(skip ?? 0)
+      .limit(limit ?? 50)
+      .toArray(),
     collection.countDocuments(query),
   ]);
   return { documents, totalCount };

@@ -28,38 +28,38 @@ jobs:
         id: release_notes
         run: |
           PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
-          
+
           if [ -z "$PREV_TAG" ]; then
             echo "No previous tag found, using all commits"
             PREV_TAG=$(git rev-list --max-parents=0 HEAD)
           fi
-          
+
           echo "Generating changelog from $PREV_TAG to ${{ steps.version.outputs.tag }}"
-          
+
           CHANGELOG=$(git log $PREV_TAG..${{ steps.version.outputs.tag }} --pretty=format:"- %s (%h)" --no-merges)
-          
+
           # Create release notes
           cat << EOF > release_notes.md
           ## Changes
-          
+
           $CHANGELOG
-          
+
           ## Docker Image
-          
+
           Pull this release:
           \`\`\`bash
           docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
           \`\`\`
-          
+
           Or use the latest tag:
           \`\`\`bash
           docker pull ghcr.io/${{ github.repository }}:latest
           \`\`\`
-          
+
           ## Installation
-          
+
           ### Using Docker Compose
-          
+
           \`\`\`yaml
           services:
             mongoman:
@@ -69,9 +69,9 @@ jobs:
               environment:
                 - MONGODB_URI=mongodb://your-mongodb-host:27017
           \`\`\`
-          
+
           ### Using Docker
-          
+
           \`\`\`bash
           docker run -p 3000:3000 \\
             -e MONGODB_URI=mongodb://your-mongodb-host:27017 \\

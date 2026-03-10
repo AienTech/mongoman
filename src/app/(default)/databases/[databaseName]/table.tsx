@@ -232,11 +232,15 @@ export function Table({ collections, databaseName, createCollection, deleteColle
                   <TooltipContent>More</TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align='end'>
-                  <DropdownMenuItem onClick={() => window.open(`/api/export/${databaseName}/${collection.name}`, '_blank')}>
+                  <DropdownMenuItem
+                    onClick={() => window.open(`/api/export/${databaseName}/${collection.name}`, '_blank')}
+                  >
                     <Download className='mr-2 h-4 w-4' />
                     Export JSON
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.open(`/api/export/${databaseName}/${collection.name}/csv`, '_blank')}>
+                  <DropdownMenuItem
+                    onClick={() => window.open(`/api/export/${databaseName}/${collection.name}/csv`, '_blank')}
+                  >
                     <FileSpreadsheet className='mr-2 h-4 w-4' />
                     Export CSV
                   </DropdownMenuItem>
@@ -251,7 +255,8 @@ export function Table({ collections, databaseName, createCollection, deleteColle
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the collection &quot;{collection.name}
+                          This action cannot be undone. This will permanently delete the collection &quot;
+                          {collection.name}
                           &quot; and remove all its data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
@@ -289,7 +294,12 @@ export function Table({ collections, databaseName, createCollection, deleteColle
       <div className='flex justify-end'>
         <CreateCollectionDialog databaseName={databaseName} createCollection={createCollection} />
       </div>
-      <DataTable columns={columns} data={JSON.parse(collections)} defaultSorting={[{ id: 'name', desc: false }]} emptyMessage='No collections in this database. Create one above.' />
+      <DataTable
+        columns={columns}
+        data={JSON.parse(collections)}
+        defaultSorting={[{ id: 'name', desc: false }]}
+        emptyMessage='No collections in this database. Create one above.'
+      />
     </div>
   );
 }

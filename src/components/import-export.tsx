@@ -23,12 +23,7 @@ interface ImportExportProps {
   onImportComplete?: () => void;
 }
 
-export function ImportExport({
-  databaseName,
-  collectionName,
-  importDocuments,
-  onImportComplete,
-}: ImportExportProps) {
+export function ImportExport({ databaseName, collectionName, importDocuments, onImportComplete }: ImportExportProps) {
   const { toast } = useToast();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -116,9 +111,7 @@ export function ImportExport({
             <div className='space-y-4'>
               <div className='flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6'>
                 <Upload className='mb-2 h-8 w-8 text-muted-foreground' />
-                <p className='mb-2 text-sm text-muted-foreground'>
-                  Select a JSON or CSV file to import
-                </p>
+                <p className='mb-2 text-sm text-muted-foreground'>Select a JSON or CSV file to import</p>
                 <Input
                   ref={fileInputRef}
                   type='file'

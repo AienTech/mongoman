@@ -456,9 +456,9 @@ export function DocumentManagement({
         </Dialog>
       </CardHeader>
       <CardContent className='space-y-4'>
-        <Tabs defaultValue="table" className="w-full">
-          <div className="flex flex-col gap-4 mb-4">
-            <div className="w-full relative z-20">
+        <Tabs defaultValue='table' className='w-full'>
+          <div className='flex flex-col gap-4 mb-4'>
+            <div className='w-full relative z-20'>
               <QueryBuilder
                 fields={getUniqueKeys(documents)}
                 onQueryChange={(query) => {
@@ -468,15 +468,15 @@ export function DocumentManagement({
                 initialQuery={searchQuery}
               />
             </div>
-            <div className="flex justify-start">
-              <TabsList className="shrink-0">
-                <TabsTrigger value="table">Table</TabsTrigger>
-                <TabsTrigger value="json">JSON</TabsTrigger>
+            <div className='flex justify-start'>
+              <TabsList className='shrink-0'>
+                <TabsTrigger value='table'>Table</TabsTrigger>
+                <TabsTrigger value='json'>JSON</TabsTrigger>
               </TabsList>
             </div>
           </div>
 
-          <TabsContent value="table" className="mt-0 space-y-4">
+          <TabsContent value='table' className='mt-0 space-y-4'>
             {isLoadingDocs ? (
               <div className='space-y-2'>
                 <Skeleton className='h-10 w-full' />
@@ -491,13 +491,15 @@ export function DocumentManagement({
                 data={documents}
                 defaultSorting={[{ id: '_id', desc: false }]}
                 emptyMessage={
-                  searchQuery ? 'No documents match your query.' : 'This collection is empty. Create your first document.'
+                  searchQuery
+                    ? 'No documents match your query.'
+                    : 'This collection is empty. Create your first document.'
                 }
               />
             )}
           </TabsContent>
 
-          <TabsContent value="json" className="mt-0 space-y-4">
+          <TabsContent value='json' className='mt-0 space-y-4'>
             {isLoadingDocs ? (
               <div className='space-y-2'>
                 <Skeleton className='h-32 w-full' />
@@ -505,19 +507,23 @@ export function DocumentManagement({
                 <Skeleton className='h-32 w-full' />
               </div>
             ) : documents.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground border rounded-md">
-                {searchQuery ? 'No documents match your query.' : 'This collection is empty. Create your first document.'}
+              <div className='text-center py-10 text-muted-foreground border rounded-md'>
+                {searchQuery
+                  ? 'No documents match your query.'
+                  : 'This collection is empty. Create your first document.'}
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className='flex flex-col gap-4'>
                 {documents.map((doc) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const docId = doc._id?.$oid || doc._id;
                   return (
-                    <Card key={docId} className="overflow-hidden shadow-sm">
-                      <div className="bg-muted/40 border-b px-4 py-2 flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                          <span className="font-mono text-xs text-foreground bg-background px-2 py-0.5 rounded-sm border">{docId}</span>
+                    <Card key={docId} className='overflow-hidden shadow-sm'>
+                      <div className='bg-muted/40 border-b px-4 py-2 flex items-center justify-between'>
+                        <span className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
+                          <span className='font-mono text-xs text-foreground bg-background px-2 py-0.5 rounded-sm border'>
+                            {docId}
+                          </span>
                         </span>
                         <DocumentActions
                           document={doc}
@@ -527,8 +533,12 @@ export function DocumentManagement({
                           isDeleting={deletingDocId === doc._id}
                         />
                       </div>
-                      <div className="p-0">
-                        <JsonViewer data={doc} initiallyExpanded={true} className="border-none rounded-none bg-transparent" />
+                      <div className='p-0'>
+                        <JsonViewer
+                          data={doc}
+                          initiallyExpanded={true}
+                          className='border-none rounded-none bg-transparent'
+                        />
                       </div>
                     </Card>
                   );
@@ -577,7 +587,7 @@ export function DocumentManagement({
               <DialogTitle>View Document</DialogTitle>
             </DialogHeader>
             <div className='py-4 min-w-0'>
-              <Editor initialValue={documentContent} onChange={() => { }} readOnly />
+              <Editor initialValue={documentContent} onChange={() => {}} readOnly />
             </div>
             <div className='flex justify-end gap-2'>
               <Button

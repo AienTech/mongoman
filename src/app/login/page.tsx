@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { GalleryVerticalEnd } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
 const LoginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -19,7 +19,7 @@ const LoginSchema = z.object({
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -60,54 +60,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-background p-4'>
-      <Card className='w-full max-w-sm'>
-        <CardHeader className='text-center'>
-          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
-            <GalleryVerticalEnd className='h-6 w-6' />
-          </div>
-          <CardTitle className='text-2xl'>MongoMan</CardTitle>
-          <CardDescription>Sign in to manage your databases</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-              {error && (
-                <Alert variant='destructive'>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+    <Card className='w-full max-w-sm'>
+      <CardHeader className='text-center'>
+        <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
+          <GalleryVerticalEnd className='h-6 w-6' />
+        </div>
+        <CardTitle className='text-2xl'>MongoMan</CardTitle>
+        <CardDescription>Sign in to manage your databases</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {error && (
+              <Alert variant='destructive'>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <FormField
+              control={form.control}
+              name='username'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='Enter username' autoFocus />
+                  </FormControl>
+                </FormItem>
               )}
-              <FormField
-                control={form.control}
-                name='username'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder='Enter username' autoFocus />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input {...field} type='password' placeholder='Enter password' />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <Button type='submit' className='w-full' disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            />
+            <FormField
+              control={form.control}
+              name='password'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input {...field} type='password' placeholder='Enter password' />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type='submit' className='w-full' disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className='flex min-h-screen items-center justify-center bg-background p-4'>
+      <Suspense fallback={<div className='text-center'>Loading...</div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }

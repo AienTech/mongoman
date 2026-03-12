@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import crypto from 'crypto';
 
 export const AUTH_COOKIE_NAME = 'mongoman-session';
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -12,7 +11,7 @@ export interface SessionPayload {
   expiresAt: number;
 }
 
-export function getAuthSecret(): string {
+export async function getAuthSecret(): Promise<string> {
   const secret = process.env.AUTH_SECRET || process.env.MONGODB_URI;
   if (!secret) {
     throw new Error(
@@ -20,33 +19,38 @@ export function getAuthSecret(): string {
         'Set AUTH_SECRET in your environment variables.',
     );
   }
-  return crypto.createHash('sha256').update(secret).digest('hex');
+  const msgUint8 = new TextEncoder().encode(secret);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function sign(payload: string): string {
-  const secret = getAuthSecret();
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(payload);
-  return hmac.digest('hex');
+async function sign(payload: string): Promise<string> {
+  const secretStr = await getAuthSecret();
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretStr);
+  const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  const hashArray = Array.from(new Uint8Array(signature));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function createToken(payload: SessionPayload): string {
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64');
-  const signature = sign(data);
+async function createToken(payload: SessionPayload): Promise<string> {
+  const data = btoa(JSON.stringify(payload));
+  const signature = await sign(data);
   return `${data}.${signature}`;
 }
 
-export function verifyToken(token: string): SessionPayload | null {
+export async function verifyToken(token: string): Promise<SessionPayload | null> {
   try {
     const [data, signature] = token.split('.');
     if (!data || !signature) return null;
-    const expected = sign(data);
-    const sigBuffer = Buffer.from(signature, 'hex');
-    const expectedBuffer = Buffer.from(expected, 'hex');
-    if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+    const expected = await sign(data);
+
+    if (!timingSafeEqual(signature, expected)) {
       return null;
     }
-    const payload: SessionPayload = JSON.parse(Buffer.from(data, 'base64').toString());
+    const payload: SessionPayload = JSON.parse(atob(data));
     if (Date.now() > payload.expiresAt) return null;
     return payload;
   } catch {
@@ -58,11 +62,17 @@ export function isAuthEnabled(): boolean {
   return !!process.env.MONGOMAN_USERNAME;
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 function safeCompare(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
+  return timingSafeEqual(a, b);
 }
 
 export async function authenticate(username: string, password: string): Promise<SessionPayload | null> {
@@ -83,7 +93,7 @@ export async function authenticate(username: string, password: string): Promise<
 }
 
 export async function createSession(payload: SessionPayload): Promise<void> {
-  const token = createToken(payload);
+  const token = await createToken(payload);
   const cookieStore = await cookies();
   cookieStore.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,

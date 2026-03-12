@@ -1,4 +1,4 @@
-FROM node:23-alpine AS base
+FROM node:24-alpine AS base
 
 ARG MONGODB_URI=mongodb://localhost:27017
 
